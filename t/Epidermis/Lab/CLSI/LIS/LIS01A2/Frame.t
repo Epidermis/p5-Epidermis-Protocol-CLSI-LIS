@@ -33,6 +33,9 @@ subtest "Check frame creation" => sub {
 		'Create intermediate frame';
 	ok Frame->new( type => 'end' )->is_end,
 		'Explicitly create end frame';
+
+	is Frame->new( content => "A|B|C|D\x0d" )->checksum,
+		'BF', 'Got checksum';
 };
 
 subtest "Parsing error detection" => sub {
