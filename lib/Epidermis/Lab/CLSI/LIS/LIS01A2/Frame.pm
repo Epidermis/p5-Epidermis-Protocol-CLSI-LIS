@@ -2,6 +2,7 @@ package Epidermis::Lab::CLSI::LIS::LIS01A2::Frame;
 # ABSTRACT: LIS01A2 Frame - a subdivision of a message
 
 use utf8;
+use feature qw(state);
 use Mu;
 use Convert::ASCIInames ();
 
@@ -27,6 +28,10 @@ const our %FRAME_TYPE_TO_TX_CONTROL => (
 	FRAME_TYPE_INTERMEDIATE ,=> ETB,
 	FRAME_TYPE_END ,=> ETX,
 );
+
+# Restricted characters of data content (LIS01A2 § 6.6.2)
+const our @RESTRICTED => map { chr(Convert::ASCIInames::ASCIIordinal($_)) }
+	qw(SOH STX ETX EOT ENQ ACK DLE NAK SYN ETB LF DC1 DC2 DC3 DC4);
 
 =attr frame_data
 
@@ -125,7 +130,7 @@ sub parse_frame_data {
 	my $eob;
 
 	# Only data from STX onwards (LIS01A2 § 6.5.1.1)
-	my $stx_re = qr/
+	state $stx_re = qr/
 		(?<STX> @{[ STX ]})
 	/xsa;
 	if( $frame_data =~ /$stx_re/g ) {
@@ -134,7 +139,7 @@ sub parse_frame_data {
 		failure::LIS01A2::Frame::Parse->throw('Expected STX');
 	}
 
-	my $frame_number_re = qr/
+	state $frame_number_re = qr/
 		\G
 		(?<frame_number> \d )
 	/xsa;
@@ -146,12 +151,9 @@ sub parse_frame_data {
 		failure::LIS01A2::Frame::Parse->throw("Expected frame number");
 	}
 
-	# Restricted characters of data content (LIS01A2 § 6.6.2)
-	my @restricted = map { chr(Convert::ASCIInames::ASCIIordinal($_)) }
-		qw(SOH STX ETX EOT ENQ ACK DLE NAK SYN ETB LF DC1 DC2 DC3 DC4);
-	my $content_re = qr/
+	state $content_re = qr/
 		\G
-		(?<content> [^ @{[ $class->_chars_to_hex_re(@restricted) ]} ]*)
+		(?<content> [^ @{[ $class->_chars_to_hex_re(@RESTRICTED) ]} ]*)
 	/xsa;
 	if( $frame_data =~ /$content_re/g ) {
 		$content = $+{content}
@@ -159,7 +161,7 @@ sub parse_frame_data {
 		failure::LIS01A2::Frame::Parse->throw("Expected content");
 	}
 
-	my $end_of_block_re = qr/
+	state $end_of_block_re = qr/
 		\G
 		(?<end_of_block> [@{[ $class->_chars_to_hex_re(values %FRAME_TYPE_TO_TX_CONTROL) ]}])
 	/xsa;
@@ -170,7 +172,7 @@ sub parse_frame_data {
 		failure::LIS01A2::Frame::Parse->throw("Expected end-of-block character");
 	}
 
-	my $checksum_re = qr/
+	state $checksum_re = qr/
 		\G
 		(?<checksum> [ 0-9 A-F ]{2})
 	/xsa;
@@ -187,7 +189,7 @@ sub parse_frame_data {
 		failure::LIS01A2::Frame::Parse->throw("Expected checksum");
 	}
 
-	my $crlf_re = qr/
+	state $crlf_re = qr/
 		\G
 		(?<CRLF> @{[ $class->_chars_to_hex_re(CR , LF) ]})
 	/xsa;
