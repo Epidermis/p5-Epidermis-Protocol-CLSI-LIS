@@ -14,7 +14,7 @@ use constant FRAME_DATA_MAX_LENGTH => 240;
 
 use failures qw(
 	LIS01A2::Message::InvalidFrameNumberSequence
-	LIS01A2::Message::FrameAfterMessageEndFrame
+	LIS01A2::Message::FrameAfterEndFrame
 );
 
 has start_frame_number => (
@@ -47,8 +47,8 @@ sub add_frame {
 		if $frame->frame_number != $next_frame_number;
 
 	# Check if last frame is end of message.
-	LIS01A2::Message::FrameAfterMessageEndFrame->throw
-		if( ! $self->is_empty && $self->frames->[-1]->is_end );
+	failure::LIS01A2::Message::FrameAfterEndFrame->throw
+		if( $self->is_complete );
 
 	$self->_push_frame( $frame );
 }
@@ -77,6 +77,11 @@ sub create_message {
 sub message_data {
 	my ($self) = @_;
 	join "", map { $_->content } @{ $self->frames };
+}
+
+sub is_complete {
+	my ($self) = @_;
+	! $self->is_empty && $self->frames->[-1]->is_end;
 }
 
 1;
