@@ -40,11 +40,18 @@ has frames => (
 sub add_frame {
 	my ($self, $frame) = @_;
 
-	# Check valid frame number sequence (modulo 8)
-	my $next_frame_number = ($self->start_frame_number + $self->number_of_frames) % 8;
-	LIS01A2::Message::InvalidFrameNumberSequence
-		->throw("Frame number @{[ $frame->frame_number ]} is not sequential (expected: $next_frame_number)")
-		if $frame->frame_number != $next_frame_number;
+	# Check valid frame number sequence
+	my $next_frame_number = $self->is_empty
+		? $self->start_frame_number
+		: $self->frames->[-1]->next_frame_number;
+	failure::LIS01A2::Message::InvalidFrameNumberSequence
+		->throw({
+			msg => "Frame number is not sequential",
+			payload => {
+				got => $frame->frame_number,
+				expected => $next_frame_number,
+			},
+		}) if $frame->frame_number != $next_frame_number;
 
 	# Check if last frame is end of message.
 	failure::LIS01A2::Message::FrameAfterEndFrame->throw
