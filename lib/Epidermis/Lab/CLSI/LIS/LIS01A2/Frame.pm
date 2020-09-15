@@ -66,6 +66,11 @@ has frame_number => (
 	default => sub { LIS01A2_FIRST_FRAME_NUMBER },
 );
 
+lazy next_frame_number => sub {
+	my ($self) = @_;
+	($self->frame_number + 1) % 8;
+};
+
 =attr content
 
   Str

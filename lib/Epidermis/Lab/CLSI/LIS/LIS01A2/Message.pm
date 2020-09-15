@@ -62,13 +62,13 @@ sub create_message {
 	my $frame_number = $message->start_frame_number;
 	while( @frame_data ) {
 		my $content = shift @frame_data;
-		$message->add_frame( Frame->new(
+		$message->add_frame( my $frame = Frame->new(
 			frame_number => $frame_number,
 			content => $content,
 			type => ( @frame_data ? 'intermediate' : 'end' ),
 		));
 
-		$frame_number = ($frame_number + 1) % 8;
+		$frame_number = $frame->next_frame_number;
 	}
 
 	return $message;
