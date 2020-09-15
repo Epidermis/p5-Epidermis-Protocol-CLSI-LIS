@@ -3,7 +3,10 @@ package Epidermis::Lab::CLSI::LIS::LIS01A2::Frame;
 
 use utf8;
 use feature qw(state);
+
 use Mu;
+use MooX::Enumeration;
+
 use Convert::ASCIInames ();
 
 use failures qw(LIS01A2::Frame::Parse LIS01A2::Frame::Checksum);
@@ -83,7 +86,8 @@ has content => (
 has type => (
 	is => 'ro',
 	required => 0,
-	isa => Enum[ FRAME_TYPE_INTERMEDIATE, FRAME_TYPE_END ],
+	isa => Enum[     FRAME_TYPE_INTERMEDIATE, FRAME_TYPE_END   ],
+	handles => [ qw/         is_intermediate          is_end / ],
 	default => sub { FRAME_TYPE_END },
 );
 

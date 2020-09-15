@@ -27,6 +27,12 @@ subtest "Check frame creation" => sub {
 	throws_ok {
 		Frame->parse_frame_data( 'junk' . $frame->frame_data . 'junk' );
 	} qr/Expected end of data/;
+
+	ok Frame->new->is_end, 'End frame is default';
+	ok Frame->new( type => 'intermediate' )->is_intermediate,
+		'Create intermediate frame';
+	ok Frame->new( type => 'end' )->is_end,
+		'Explicitly create end frame';
 };
 
 subtest "Parsing error detection" => sub {
