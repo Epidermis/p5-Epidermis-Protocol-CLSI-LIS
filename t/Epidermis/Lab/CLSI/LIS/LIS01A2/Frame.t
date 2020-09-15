@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use Test::Most tests => 3;
+use Test::Most tests => 4;
 
 use Epidermis::Lab::CLSI::LIS::Constants qw(STX);
 use aliased 'Epidermis::Lab::CLSI::LIS::LIS01A2::Frame';
@@ -109,6 +109,15 @@ subtest "Incorrect frame number" => sub {
 			frame_number => 8,
 		);
 	} qr/FrameNumber/;
+};
+
+subtest "Frame number sequence" => sub {
+	my $frame = Frame->new;
+	is $frame->frame_number, 1, 'FN: starts at 1';
+	is $frame->next_frame_number, 2, 'FN: 1 -> 2';
+
+	my $frame_wrap = Frame->new( frame_number => 7 );
+	is $frame_wrap->next_frame_number, 0, 'FN: 7 -> 0';
 };
 
 done_testing;
