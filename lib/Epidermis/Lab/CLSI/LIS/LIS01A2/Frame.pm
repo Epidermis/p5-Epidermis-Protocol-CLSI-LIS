@@ -114,7 +114,6 @@ sub _compute_checksum {
 =cut
 sub parse_frame_data {
 	my ($class, $frame_data) = @_;
-	require bytes;
 
 	my ($fn, $content, $type);
 	my $eob;
