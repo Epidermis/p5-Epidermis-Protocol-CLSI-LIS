@@ -17,7 +17,7 @@ use Epidermis::Lab::CLSI::LIS::Constants qw(
 
 use failures qw( LIS02A2::Record::InvalidDelimiterSpec );
 
-use MooX::Struct
+use MooX::Struct -retain,
 	DelimiterSpec => [
 		field_sep     => [ isa => Separator, default => sub { FIELD_SEP     } ],
 		repeat_sep    => [ isa => Separator, default => sub { REPEAT_SEP    } ],
@@ -64,6 +64,7 @@ use MooX::Struct
 			$self->to_delimiter_definition;
 		},
 	];
+our $DelimiterSpec = DelimiterSpec;
 
 ### LIS02A2: 6.1    Record Type ID
 ### 5.5.1 Message Header Record (H)
