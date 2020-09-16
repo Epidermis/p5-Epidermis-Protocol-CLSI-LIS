@@ -1,6 +1,7 @@
 use Modern::Perl;
 package Epidermis::Lab::CLSI::LIS::LIS02A2::Record::MessageHeader;
 # ABSTRACT: Message Header Record
+### LIS02A2: 6     Message Header Record
 
 use Moo;
 use Epidermis::Lab::CLSI::LIS::LIS02A2::Meta::Record;
@@ -64,12 +65,51 @@ use MooX::Struct
 		},
 	];
 
+### LIS02A2: 6.1    Record Type ID
+### 5.5.1 Message Header Record (H)
 record_type_id 'H';
 
+### LIS02A2: 6.2    Delimiter Definition
 field 'delimiter_definition', default => sub {
 	DelimiterSpec->new;
 }, isa => DelimiterSpec->TYPE_TINY|Str|ArrayRef, coerce => sub {
 	DelimiterSpec->coerce($_[0]);
 };
+
+### LIS02A2: 6.3    Message Control ID
+field 'message_control_id';
+
+### LIS02A2: 6.4   Access Password
+field 'access_password';
+
+### LIS02A2: 6.5   Sender Name or ID
+field 'sender_id';
+
+### LIS02A2: 6.6   Sender Street Address
+field 'sender_street_address';
+
+### LIS02A2: 6.7   Reserved Field
+field 'reserved';
+
+### LIS02A2: 6.8   Sender Telephone Number
+field 'sender_telephone';
+
+### LIS02A2: 6.9   Characteristics of Sender
+field 'sender_characteristics';
+
+### LIS02A2: 6.10 Receiver ID
+field 'receiver_id';
+
+### LIS02A2: 6.11 Comment or Special Instructions
+field 'comment';
+
+### LIS02A2: 6.12 Processing ID
+field 'processing_id';
+
+### LIS02A2: 6.13 Version Number
+field 'version', default => sub { 'LIS2-A2' };
+
+### LIS02A2: 6.14 Date and Time of Message
+field 'timestamp';
 
 1;
