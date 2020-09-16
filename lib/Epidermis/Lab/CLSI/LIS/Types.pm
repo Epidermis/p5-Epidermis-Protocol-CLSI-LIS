@@ -8,7 +8,14 @@ use Type::Library 0.008 -base,
 use Type::Utils -all;
 
 use Types::Common::Numeric qw(IntRange);
+use Types::Standard        qw(StrMatch);
 
 declare "FrameNumber", parent => IntRange[0, 7];
+
+declare "SingleCharacter", parent => StrMatch[qr/\A.\z/];
+
+declare "RecordType", parent => "SingleCharacter";
+
+declare "Separator", parent => "SingleCharacter";
 
 1;
