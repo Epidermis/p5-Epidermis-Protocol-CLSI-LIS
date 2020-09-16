@@ -21,6 +21,8 @@ sub import {
 
 	my $has = $caller->can( "has" ) or die "Moo not loaded in caller: $caller";
 
+	$RECORD_FIELD_STORE{ $caller } = [];
+
 	my $add_field = sub {
 		my ($target, $name) = @_;
 		push @{ $RECORD_FIELD_STORE{ $target } }, $name;
@@ -57,7 +59,7 @@ use Moo::Role;
 
 sub _fields {
 	my $package = blessed $_[0] ? ref $_[0] : $_[0];
-	return exists $RECORD_FIELD_STORE{$package} ? @{ $RECORD_FIELD_STORE{$package} } : ();
+	return @{ $RECORD_FIELD_STORE{$package} };
 }
 
 1;
