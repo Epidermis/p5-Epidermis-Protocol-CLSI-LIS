@@ -12,6 +12,8 @@ subtest "Create message header" => sub {
 	subtest "Default delimiters" => sub {
 		my $header = MessageHeader->new;
 		is $header->delimiter_definition, q{|\^&|}, 'Got default delimiters';
+		is $header->delimiter_definition->escape_sep, '&',
+			'Access individual elements of delimiter spec';
 	};
 
 	subtest "Custom delimiters" => sub {
