@@ -12,7 +12,7 @@ use Types::Standard        qw(StrMatch);
 
 declare "FrameNumber", parent => IntRange[0, 7];
 
-declare "SingleCharacter", parent => StrMatch[qr/\A.\z/];
+declare "SingleCharacter", parent => StrMatch[qr/\A[^\x0d]\z/];
 
 declare "RecordType", parent => "SingleCharacter";
 
