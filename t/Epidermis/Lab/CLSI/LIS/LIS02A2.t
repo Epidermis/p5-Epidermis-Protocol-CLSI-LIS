@@ -32,9 +32,16 @@ subtest "Standard data" => sub {
 	local $TODO = 'Parse records';
 	TODO : {
 	my @data = (
+		#{
+			## Note 1 This sample is not recommended for implementation.
+			#id => 'fig3',
+			#desc => 'Figure 3. Minimal Implementation (No Patient ID or Specimen ID)',
+			#text => <<~'EOF',
+				#EOF
+		#},
 		{
-			id => 'fig3',
-			desc => 'Figure 3. Minimal Implementation (No Patient ID or Specimen ID)',
+			id => 'fig4',
+			desc => 'Figure 4. No Patient ID; Specimen ID and Multiple Results Shown',
 			text => <<~'EOF',
 				H|\^&
 				P|1
@@ -46,12 +53,6 @@ subtest "Standard data" => sub {
 				R|1|^^^A3|1.121||||||||19890327132422
 				R|2|^^^A4|1.097||||||||19890317132422
 				L|1
-				EOF
-		},
-		{
-			id => 'fig4',
-			desc => 'Figure 4. No Patient ID; Specimen ID and Multiple Results Shown',
-			text => <<~'EOF',
 			EOF
 		},
 		{
