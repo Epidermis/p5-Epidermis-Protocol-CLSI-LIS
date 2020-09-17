@@ -5,6 +5,8 @@ use Test::Most tests => 2;
 use lib 't/lib';
 
 use Epidermis::Lab::CLSI::LIS::LIS02A2;
+use Epidermis::Lab::CLSI::LIS::Constants qw(RECORD_SEP);
+use aliased 'Epidermis::Lab::CLSI::LIS::LIS02A2::Record::MessageHeader';
 use List::AllUtils qw(pairmap);
 
 subtest "Check record field counts" => sub {
@@ -192,6 +194,30 @@ subtest "Standard data" => sub {
 				EOF
 		},
 	);
+
+	my $DelimiterSpec = $Epidermis::Lab::CLSI::LIS::LIS02A2::Record::MessageHeader::DelimiterSpec->new;
+	for my $message (@data) {
+		my $text = $message->{text} =~ s/\n/\r/gsr;
+		my @records = split /\Q@{[ RECORD_SEP ]}\E/, $text;
+		for my $record (@records) {
+			$record = [ split /\Q@{[ $DelimiterSpec->field_sep ]}\E/, $record ];
+			for my $field (@$record) {
+				$field = [ split /\Q@{[ $DelimiterSpec->repeat_sep ]}\E/, $field ];
+				for my $repeat (@$field) {
+					$repeat = [ split /\Q@{[ $DelimiterSpec->component_sep ]}\E/, $repeat ];
+					for my $escapable (@$repeat) {
+						$escapable =~ s/\Q@{[ $DelimiterSpec->escape_sep ]}F@{[ $DelimiterSpec->escape_sep ]}\E/@{[ $DelimiterSpec->field_sep ]}/g;
+						$escapable =~ s/\Q@{[ $DelimiterSpec->escape_sep ]}S@{[ $DelimiterSpec->escape_sep ]}\E/@{[ $DelimiterSpec->component_sep ]}/g;
+						$escapable =~ s/\Q@{[ $DelimiterSpec->escape_sep ]}R@{[ $DelimiterSpec->escape_sep ]}\E/@{[ $DelimiterSpec->repeat_sep ]}/g;
+						# TODO
+						# escape + hex
+						#$escapable =~ s/\Q@{[ $DelimiterSpec->escape_sep ]}E@{[ $DelimiterSpec->escape_sep ]}\E/@{[ $DelimiterSpec->escape_sep ]}/g;
+					}
+				}
+			}
+		}
+		use DDP; p @records;
+	}
 
 	pass;
 	}
