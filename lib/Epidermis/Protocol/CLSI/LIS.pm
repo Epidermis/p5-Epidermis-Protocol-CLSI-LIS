@@ -1,14 +1,10 @@
-=pod
+package Epidermis::Protocol::CLSI::LIS;
+# ABSTRACT: CLSI LIS protocol for clinical laboratory equipment
 
-=encoding UTF-8
+use strict;
+use warnings;
 
-=head1 NAME
-
-Epidermis::Protocol::CLSI::LIS - CLSI LIS protocol for clinical laboratory equipment
-
-=head1 VERSION
-
-version 0.001
+1;
 
 =head1 DESCRIPTION
 
@@ -29,16 +25,5 @@ Specification for Low-Level Protocol to Transfer Messages Between Clinical Labor
 Specification for Transferring Information Between Clinical Laboratory Instruments and Information Systems, 2nd Edition.
 
 =back
-
-=head1 AUTHOR
-
-Zakariyya Mughal <zmughal@cpan.org>
-
-=head1 COPYRIGHT AND LICENSE
-
-This software is copyright (c) 2020 by Zakariyya Mughal.
-
-This is free software; you can redistribute it and/or modify it under
-the same terms as the Perl 5 programming language system itself.
 
 =cut
