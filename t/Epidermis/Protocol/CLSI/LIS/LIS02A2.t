@@ -206,12 +206,7 @@ EOF
 				for my $repeat (@$field) {
 					$repeat = [ split /\Q@{[ $DelimiterSpec->component_sep ]}\E/, $repeat ];
 					for my $escapable (@$repeat) {
-						$escapable =~ s/\Q@{[ $DelimiterSpec->escape_sep ]}F@{[ $DelimiterSpec->escape_sep ]}\E/@{[ $DelimiterSpec->field_sep ]}/g;
-						$escapable =~ s/\Q@{[ $DelimiterSpec->escape_sep ]}S@{[ $DelimiterSpec->escape_sep ]}\E/@{[ $DelimiterSpec->component_sep ]}/g;
-						$escapable =~ s/\Q@{[ $DelimiterSpec->escape_sep ]}R@{[ $DelimiterSpec->escape_sep ]}\E/@{[ $DelimiterSpec->repeat_sep ]}/g;
-						# TODO
-						# escape + hex
-						#$escapable =~ s/\Q@{[ $DelimiterSpec->escape_sep ]}E@{[ $DelimiterSpec->escape_sep ]}\E/@{[ $DelimiterSpec->escape_sep ]}/g;
+						$escapable = $DelimiterSpec->unescape( $escapable );
 					}
 				}
 			}

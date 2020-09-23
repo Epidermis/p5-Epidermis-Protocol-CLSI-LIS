@@ -13,7 +13,10 @@ use Epidermis::Protocol::CLSI::LIS::Constants qw(
 	REPEAT_SEP
 	COMPONENT_SEP
 	ESCAPE_SEP
+
+	ENCODING
 );
+use Encode qw(decode);
 
 use failures qw( LIS02A2::Record::InvalidDelimiterSpec );
 
@@ -62,6 +65,64 @@ use MooX::Struct -retain,
 		TO_STRING => sub {
 			my ($self) = @_;
 			$self->to_delimiter_definition;
+		},
+
+		unescape => sub {
+			my ($self, $field) = @_;
+
+			my $escaped = $field;
+
+			my @escapes = (
+				{
+					template => '&H&',
+					description => 'start highlighting text',
+				},
+				{
+					template => '&N&',
+					description => 'normal text (end highlighting)',
+				},
+				{
+					template => '&F&',
+					description => 'imbedded field delimiter character',
+					replace => $self->field_sep,
+				},
+				{
+					template => '&S&',
+					description => 'imbedded component field delimiter character',
+					replace => $self->component_sep,
+				},
+				{
+					template => '&R&',
+					description => 'imbedded repeat field delimiter character',
+					replace => $self->repeat_sep,
+				},
+				{
+					template => '&E&',
+					description => 'imbedded escape delimiter character',
+					replace => $self->escape_sep,
+				},
+				{
+					template => '&Xhhhh&',
+					description => 'hexadecimal data',
+				},
+			);
+
+			# remove highlighting
+			$escaped =~ s/\Q@{[ $self->escape_sep ]}H@{[ $self->escape_sep ]}\E//g;
+			$escaped =~ s/\Q@{[ $self->escape_sep ]}N@{[ $self->escape_sep ]}\E//g;
+
+			$escaped =~ s/\Q@{[ $self->escape_sep ]}F@{[ $self->escape_sep ]}\E/@{[ $self->field_sep ]}/g;
+			$escaped =~ s/\Q@{[ $self->escape_sep ]}S@{[ $self->escape_sep ]}\E/@{[ $self->component_sep ]}/g;
+			$escaped =~ s/\Q@{[ $self->escape_sep ]}R@{[ $self->escape_sep ]}\E/@{[ $self->repeat_sep ]}/g;
+
+			# escape + hex
+			my $escape_sep_as_hex = unpack("H*", $self->escape_sep);
+			my $double_escape = "@{[ $self->escape_sep ]}X$escape_sep_as_hex@{[ $self->escape_sep ]}";
+			$escaped =~ s/\Q@{[ $self->escape_sep ]}E@{[ $self->escape_sep ]}\E/$double_escape/g;
+
+			$escaped =~ s/\Q@{[ $self->escape_sep ]}X\E([0-9A-Fa-f]+)\Q@{[ $self->escape_sep ]}\E/decode( ENCODING, pack("H*",$1) )/g;
+
+			$escaped;
 		},
 	];
 our $DelimiterSpec = DelimiterSpec;
