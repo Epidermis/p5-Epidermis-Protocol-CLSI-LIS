@@ -84,7 +84,7 @@ EOF
 		{
 			id => 'fig7',
 			desc => 'Figure 7. Results from Given Ordered Test Selections Shown in Various Formats',
-			text => <<~'EOF',
+			text => <<~'EOF'=~ s/\Q<CR> ###\E.*$//gmr,
 H|\^&||PSWD|Harper Labs|2937 Southwestern Avenue^Buffalo^NY^73205||319 412-9722||||P|2.5|19890314
 P|1|2734|123|306-87-4587|BLAKE^LINDSEY^ANN^MISS
 C|1|L|Notify IDC if tests positive|G
@@ -111,12 +111,12 @@ O|2|032989326||^^^GLU|S
 R|1|^^^GLU|91.5
 P|3|1583|250|151-37-6926|SIMPSON^ALBERT^MR
 O|1|032989327||^^^LIVER|R
-R|1|^^^AST|28<CR> (Test ID field Implicitly Relates to LIVER order)
+R|1|^^^AST|28<CR> ###(Test ID field Implicitly Relates to LIVER order)
 R|2|^^^ALT|49
 R|3|^^^TBILI|7.3
 R|4|^^^GGT|27
 O|2|032989327||^^^CHEM12|R
-R|1|^^^CHEM12^ALB-G|28<CR> (Test ID field Explicitly Relates to CHEM12 order)
+R|1|^^^CHEM12^ALB-G|28<CR> ###(Test ID field Explicitly Relates to CHEM12 order)
 R|2|^^^CHEM12^BUN|49
 R|3|^^^CHEM12^CA|7.3
 R|4|^^^CHEM12^CHOL|27
