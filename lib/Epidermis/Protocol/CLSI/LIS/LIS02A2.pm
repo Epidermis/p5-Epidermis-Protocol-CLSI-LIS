@@ -2,24 +2,33 @@ use Modern::Perl;
 package Epidermis::Protocol::CLSI::LIS::LIS02A2;
 # ABSTRACT: Data protocol
 
-# 6 Message Header Record ..........................................................................................................11
-use Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageHeader;
-# 7 Patient Information Record......................................................................................................13
-use Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::PatientInformation;
-# 8 Test Order Record....................................................................................................................17
-use Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::TestOrder;
-# 9 Result Record...........................................................................................................................22
-use Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::Result;
-# 10 Comment Record .....................................................................................................................24
-use Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::Comment;
-# 11 Request Information Record ....................................................................................................25
-use Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::RequestInformation;
-# 12 Message Terminator Record ....................................................................................................27
-use Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageTerminator;
-# 13 Scientific Record......................................................................................................................28
-use Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::Scientific;
-# 14 Manufacturer Information Record ...........................................................................................30
-use Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::ManufacturerInformation;
+use Const::Fast;
 
+const our @BASE_RECORD_TYPE_PACKAGES =>
+	map {
+		"Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::$_"
+	} (
+		# 6 Message Header Record ..........................................................................................................11
+		'MessageHeader',
+		# 7 Patient Information Record......................................................................................................13
+		'PatientInformation',
+		# 8 Test Order Record....................................................................................................................17
+		'TestOrder',
+		# 9 Result Record...........................................................................................................................22
+		'Result',
+		# 10 Comment Record .....................................................................................................................24
+		'Comment',
+		# 11 Request Information Record ....................................................................................................25
+		'RequestInformation',
+		# 12 Message Terminator Record ....................................................................................................27
+		'MessageTerminator',
+		# 13 Scientific Record......................................................................................................................28
+		'Scientific',
+		# 14 Manufacturer Information Record ...........................................................................................30
+		'ManufacturerInformation',
+	);
+
+use Module::Load;
+load $_ for @BASE_RECORD_TYPE_PACKAGES;
 
 1;
