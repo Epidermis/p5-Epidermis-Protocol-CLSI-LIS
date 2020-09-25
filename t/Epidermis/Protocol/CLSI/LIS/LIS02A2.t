@@ -6,7 +6,7 @@ use lib 't/lib';
 
 use Epidermis::Protocol::CLSI::LIS::LIS02A2;
 use Epidermis::Protocol::CLSI::LIS::Constants qw(RECORD_SEP);
-use aliased 'Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageHeader';
+use Epidermis::Protocol::CLSI::LIS::LIS02A2::Codec;
 use List::AllUtils qw(pairmap);
 
 subtest "Check record field counts" => sub {
@@ -196,24 +196,25 @@ EOF
 		},
 	);
 
+	my @messages;
 	my $DelimiterSpec = $Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageHeader::DelimiterSpec->new;
 	for my $message (@data) {
 		my $text = $message->{text} =~ s/\n/\r/gsr;
 		my @records = split /\Q@{[ RECORD_SEP ]}\E/, $text;
+		my $codec = Epidermis::Protocol::CLSI::LIS::LIS02A2::Codec->new_from_message_header_data(
+			$records[0],
+		);
+		my @decoded;
 		for my $record (@records) {
-			$record = [ split /\Q@{[ $DelimiterSpec->field_sep ]}\E/, $record ];
-			for my $field (@$record) {
-				$field = [ split /\Q@{[ $DelimiterSpec->repeat_sep ]}\E/, $field ];
-				for my $repeat (@$field) {
-					$repeat = [ split /\Q@{[ $DelimiterSpec->component_sep ]}\E/, $repeat ];
-					for my $escapable (@$repeat) {
-						$escapable = $DelimiterSpec->unescape( $escapable );
-					}
-				}
+			my $data = $codec->decode_record_data($record);
+			push @decoded, {
+				text => $record,
+				data => $data,
 			}
 		}
-		use DDP; p @records;
+		push @messages, { data => \@decoded, message => $message };
 	}
+	use DDP; p @messages, class => { expand => 'all' };
 
 	pass;
 	}
