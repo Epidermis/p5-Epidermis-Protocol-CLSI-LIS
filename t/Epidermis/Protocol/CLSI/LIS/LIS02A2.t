@@ -238,15 +238,27 @@ EOF
 		my $codec = Epidermis::Protocol::CLSI::LIS::LIS02A2::Codec->new_from_message_header_data(
 			$records[0],
 		);
+
 		my @decoded;
+
+		my $message_as_outline = "";
+		my $previous_level = 0;
+
 		for my $record (@records) {
 			my $data = $codec->decode_record_data($record);
+
 			push @decoded, {
 				text => $record,
 				data => $data,
-			}
+			};
+
+			my $level = ! defined $data->_level ? $previous_level : $data->_level;
+			$message_as_outline .= ("  " x $level) . $record . "\n";
+			$previous_level = $level;
 		}
 		push @messages, { data => \@decoded, message => $message };
+
+		print $message_as_outline;
 	}
 	use DDP; p @messages, class => { expand => 'all' };
 
