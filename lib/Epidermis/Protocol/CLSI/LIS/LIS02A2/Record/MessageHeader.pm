@@ -40,6 +40,12 @@ use MooX::Struct -retain,
 			return join "", @$self, $self->field_sep;
 		},
 
+		_to_delimiter_for_join => sub {
+			my ($self) = @_;
+			$self->_check_valid_spec;
+			return join "", @$self;
+		},
+
 		coerce => sub {
 			my ($class, $data) = @_;
 

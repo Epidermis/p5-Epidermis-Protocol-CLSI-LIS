@@ -65,8 +65,6 @@ subtest "Check record level" => sub {
 };
 
 subtest "Standard data" => sub {
-	local $TODO = 'Parse records';
-	TODO : {
 	my @data = (
 		#{
 			## Note 1 This sample is not recommended for implementation.
@@ -231,40 +229,18 @@ EOF
 	);
 
 	my @messages;
-	my $DelimiterSpec = $Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageHeader::DelimiterSpec->new;
 	for my $message (@data) {
 		my $text = $message->{text} =~ s/\n/\r/gsr;
 		my @records =
 			map { s/^\s*//sgr }
 			split /\Q@{[ RECORD_SEP ]}\E/, $text;
-		my $codec = Epidermis::Protocol::CLSI::LIS::LIS02A2::Codec->new_from_message_header_data(
-			$records[0],
-		);
-
-		my @decoded;
-
-		my $message_as_outline = "";
-		my $previous_level = 0;
-
+		my $lis_msg = Epidermis::Protocol::CLSI::LIS::LIS02A2::Message->new;
 		for my $record (@records) {
-			my $data = $codec->decode_record_data($record);
-
-			push @decoded, {
-				text => $record,
-				data => $data,
-			};
-
-			my $level = ! defined $data->_level ? $previous_level : $data->_level;
-			$message_as_outline .= ("  " x $level) . $record . "\n";
-			$previous_level = $level;
+			$lis_msg->add_record_text($record);
 		}
-		push @messages, { data => \@decoded, message => $message };
 
-		is $message_as_outline, $message->{text}, 'Message outline round-trip';
-	}
-	use DDP; p @messages, class => { expand => 'all' };
-
-	pass;
+		is $lis_msg->as_outline, $message->{text},
+			'Message outline round-trip';
 	}
 };
 

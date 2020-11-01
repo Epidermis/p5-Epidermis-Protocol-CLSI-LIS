@@ -31,4 +31,6 @@ const our @BASE_RECORD_TYPE_PACKAGES =>
 use Module::Load;
 load $_ for @BASE_RECORD_TYPE_PACKAGES;
 
+use Epidermis::Protocol::CLSI::LIS::LIS02A2::Message;
+
 1;

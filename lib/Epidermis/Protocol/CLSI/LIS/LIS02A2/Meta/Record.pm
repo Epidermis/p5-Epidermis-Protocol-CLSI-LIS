@@ -75,4 +75,8 @@ sub _fields {
 	return @{ $RECORD_FIELD_STORE{$package} };
 }
 
+has _number_of_decoded_fields => (
+	is => 'ro',
+);
+
 1;
