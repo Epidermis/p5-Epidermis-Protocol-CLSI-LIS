@@ -10,6 +10,8 @@ use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 ### 5.5.7 Scientific Record (S)
 record_type_id 'S';
 
+record_level 1;
+
 ### LIS02A2: 13.2 Sequence Number
 field 'sequence';
 ### LIS02A2: 13.3 Analytical Method

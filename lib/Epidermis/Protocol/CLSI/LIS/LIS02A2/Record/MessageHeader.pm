@@ -131,6 +131,8 @@ our $DelimiterSpec = DelimiterSpec;
 ### 5.5.1 Message Header Record (H)
 record_type_id 'H';
 
+record_level 0;
+
 ### LIS02A2: 6.2    Delimiter Definition
 field 'delimiter_definition', default => sub {
 	DelimiterSpec->new;

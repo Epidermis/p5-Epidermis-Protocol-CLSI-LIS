@@ -10,6 +10,8 @@ use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 ### 5.5.6 Request Information Record (Q)
 record_type_id 'Q';
 
+record_level 1;
+
 ### LIS02A2: 11.2 Sequence Number
 field 'sequence';
 ### LIS02A2: 11.3 Starting Range ID Number

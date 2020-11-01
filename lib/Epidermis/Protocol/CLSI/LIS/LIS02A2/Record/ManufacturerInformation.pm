@@ -9,6 +9,8 @@ use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 ### 5.5.8 Manufacturer Information Record (M)
 record_type_id 'M';
 
+record_level undef;
+
 #  Sequence number—As defined in Section 5.6.7.
 field 'sequence';
 

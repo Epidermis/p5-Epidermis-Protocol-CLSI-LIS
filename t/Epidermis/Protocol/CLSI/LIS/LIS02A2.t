@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use Test::Most tests => 2;
+use Test::Most tests => 3;
 
 use lib 't/lib';
 
@@ -28,6 +28,40 @@ subtest "Check record field counts" => sub {
 			$b,
 			"Field count for $a"
 	} @RECORD_TYPE_TO_FIELD_COUNT;
+};
+
+subtest "Check record level" => sub {
+	my %LEVEL_TO_RECORD_TYPE = (
+		# At level zero is the message header and message terminator.
+		0 => [ qw(MessageHeader MessageTerminator) ],
+
+		# At level one is the patient record, the request-information record, and the scientific record.
+		1 => [ qw( PatientInformation RequestInformation Scientific ) ],
+
+		# At level two is the test order record.
+		2 => [ qw(TestOrder) ],
+
+		# At level three is the result record.
+		3 => [ qw(Result) ],
+
+		# The comment and manufacturer information records do not have an assigned level.
+		undef => [ qw(Comment ManufacturerInformation) ],
+	);
+	my %RECORD_TYPE_TO_LEVEL = map {
+		my $level_str = $_;
+		my $level = eval $level_str; ## no critic: ProhibitStringyEval
+
+		map {
+			my $record_type = $_;
+			( $_ => $level )
+		} @{ $LEVEL_TO_RECORD_TYPE{$level_str} };
+	} keys %LEVEL_TO_RECORD_TYPE;
+
+	pairmap {
+		is scalar ('Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::'.$a)->_level,
+			$b,
+			"Level for $a"
+	} %RECORD_TYPE_TO_LEVEL;
 };
 
 subtest "Standard data" => sub {

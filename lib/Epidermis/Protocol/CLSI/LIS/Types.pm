@@ -7,14 +7,16 @@ use Type::Library 0.008 -base,
 	)];
 use Type::Utils -all;
 
-use Types::Common::Numeric qw(IntRange);
-use Types::Standard        qw(StrMatch);
+use Types::Common::Numeric qw(IntRange PositiveOrZeroInt);
+use Types::Standard        qw(StrMatch Maybe);
 
 declare "FrameNumber", parent => IntRange[0, 7];
 
 declare "SingleCharacter", parent => StrMatch[qr/\A[^\x0d]\z/];
 
 declare "RecordType", parent => "SingleCharacter";
+
+declare "RecordLevel", parent => Maybe[PositiveOrZeroInt];
 
 declare "Separator", parent => "SingleCharacter";
 

@@ -10,6 +10,8 @@ use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 ### 5.5.4 Result Record (R)
 record_type_id 'R';
 
+record_level 3;
+
 ### LIS02A2: 9.2    Sequence Number
 field 'sequence';
 ### LIS02A2: 9.3    Universal Test ID

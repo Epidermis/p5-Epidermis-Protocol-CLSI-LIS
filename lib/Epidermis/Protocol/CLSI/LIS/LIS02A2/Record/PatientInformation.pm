@@ -10,6 +10,8 @@ use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 ### 5.5.2 Patient Identifying Record (P)
 record_type_id 'P';
 
+record_level 1;
+
 ### LIS02A2: 7.2    Sequence Number
 field 'sequence';
 ### LIS02A2: 7.3    Practice-Assigned Patient ID
