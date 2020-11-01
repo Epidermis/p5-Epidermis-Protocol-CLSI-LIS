@@ -6,8 +6,9 @@ use MooX::HandlesVia;
 
 use Types::Standard qw(ArrayRef ConsumerOf);
 
-has _codec => (
+has codec => (
 	is => 'rw',
+	predicate => 1,
 );
 
 has records => (
@@ -23,18 +24,29 @@ has records => (
 	},
 );
 
+sub _set_codec_from_record_text {
+	my ($self, $record_text) = @_;
+	die "Codec already set\n" if $self->has_codec;
+	my $codec = Epidermis::Protocol::CLSI::LIS::LIS02A2::Codec->new_from_message_header_data(
+		$record_text,
+	);
+	$self->codec( $codec );
+}
+
 sub add_record_text {
 	my ($self, $record_text) = @_;
 	if( $self->is_empty ) {
-		my $codec = Epidermis::Protocol::CLSI::LIS::LIS02A2::Codec->new_from_message_header_data(
-			$record_text,
-		);
-		$self->_codec( $codec );
+		$self->_set_codec_from_record_text( $record_text );
 	}
 
-	my $data = $self->_codec->decode_record_data($record_text);
+	my $data = $self->codec->decode_record_data($record_text);
+	$self->add_record( $data );
+}
+
+sub add_record {
+	my ($self, $record) = @_;
 	# TODO check sequence and level
-	$self->_push_record( $data );
+	$self->_push_record( $record );
 }
 
 sub as_outline {
@@ -56,8 +68,8 @@ sub as_outline {
 			: $#fields;
 		if( $record->type_id eq 'H' ) {
 			$joined_records = join(
-				$self->_codec->delimiter_spec->field_sep,
-				$record->type_id . $self->_codec->delimiter_spec->_to_delimiter_for_join,
+				$self->codec->delimiter_spec->field_sep,
+				$record->type_id . $self->codec->delimiter_spec->_to_delimiter_for_join,
 				map {
 					my $field = $record->$_ // '';
 					ref $field ? $field->{text} : $field
@@ -65,7 +77,7 @@ sub as_outline {
 			);
 		} else {
 			$joined_records = join(
-				$self->_codec->delimiter_spec->field_sep,
+				$self->codec->delimiter_spec->field_sep,
 				map {
 					my $field = $record->$_ // '';
 					ref $field ? $field->{text} : $field
