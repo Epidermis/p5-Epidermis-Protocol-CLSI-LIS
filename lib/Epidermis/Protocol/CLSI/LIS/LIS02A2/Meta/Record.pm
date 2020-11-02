@@ -8,7 +8,7 @@ use Moo::_Utils qw(_install_tracked);
 use MooX::ClassAttribute ();
 use Scalar::Util qw(blessed);
 
-use Epidermis::Protocol::CLSI::LIS::Types qw(RecordType);
+use Epidermis::Protocol::CLSI::LIS::Types qw(RecordType RecordLevel);
 
 our %RECORD_FIELD_STORE;
 
@@ -53,6 +53,19 @@ sub import {
 			default => sub { $record_char },
 		);
 	};
+
+	_install_tracked $caller => record_level => sub {
+		my ($record_level) = @_;
+		my $name = '_level';
+
+		# not a field
+		$class_has->(
+			$name,
+			is => 'ro',
+			isa => RecordLevel,
+			default => sub { $record_level },
+		);
+	};
 }
 
 use Moo::Role;
@@ -61,5 +74,9 @@ sub _fields {
 	my $package = blessed $_[0] ? ref $_[0] : $_[0];
 	return @{ $RECORD_FIELD_STORE{$package} };
 }
+
+has _number_of_decoded_fields => (
+	is => 'ro',
+);
 
 1;

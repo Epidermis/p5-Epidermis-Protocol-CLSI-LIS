@@ -40,6 +40,12 @@ use MooX::Struct -retain,
 			return join "", @$self, $self->field_sep;
 		},
 
+		_to_delimiter_for_join => sub {
+			my ($self) = @_;
+			$self->_check_valid_spec;
+			return join "", @$self;
+		},
+
 		coerce => sub {
 			my ($class, $data) = @_;
 
@@ -130,6 +136,8 @@ our $DelimiterSpec = DelimiterSpec;
 ### LIS02A2: 6.1    Record Type ID
 ### 5.5.1 Message Header Record (H)
 record_type_id 'H';
+
+record_level 0;
 
 ### LIS02A2: 6.2    Delimiter Definition
 field 'delimiter_definition', default => sub {

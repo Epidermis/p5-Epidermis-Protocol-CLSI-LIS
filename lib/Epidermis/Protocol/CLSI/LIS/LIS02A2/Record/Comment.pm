@@ -10,6 +10,8 @@ use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 ### 5.5.5 Comment Record (C)
 record_type_id 'C';
 
+record_level undef;
+
 ### LIS02A2: 10.2 Sequence Number
 field 'sequence';
 ### LIS02A2: 10.3 Comment Source

@@ -10,6 +10,8 @@ use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 ### 5.5.3 Test Order Record (O)
 record_type_id 'O';
 
+record_level 2;
+
 ### LIS02A2: 8.4.2 Sequence Number
 field 'sequence';
 ### LIS02A2: 8.4.3 Specimen ID

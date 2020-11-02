@@ -62,7 +62,9 @@ sub decode_record_data {
 	my ($self, $record_data) = @_;
 	my $DelimiterSpec = $self->delimiter_spec;
 
-	my $record = [ split /\Q@{[ $DelimiterSpec->field_sep ]}\E/, $record_data ];
+	my $record = [ split /\Q@{[ $DelimiterSpec->field_sep ]}\E/, $record_data, -1 ];
+
+	my $number_of_decoded_fields = @$record;
 
 	my $type_id = shift @$record;
 	unless ( exists $self->type_id_record_map->{$type_id} ) {
@@ -123,6 +125,7 @@ sub decode_record_data {
 
 	my $record_object = $self->type_id_record_map->{$type_id}->new(
 		%field_to_data,
+		_number_of_decoded_fields => $number_of_decoded_fields,
 	);
 
 	return $record_object;
