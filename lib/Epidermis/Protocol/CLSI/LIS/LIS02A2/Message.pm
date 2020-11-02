@@ -68,22 +68,22 @@ sub as_outline {
 				&& $record->_number_of_decoded_fields
 			? $record->_number_of_decoded_fields - 1
 			: $#fields;
+		my $map_fields = sub {
+			map {
+				my $field = $record->$_ // '';
+				ref $field ? $field->{text} : $field
+			} @_;
+		};
 		if( $record->type_id eq 'H' ) {
 			$joined_records = join(
 				$self->codec->delimiter_spec->field_sep,
 				$record->type_id . $self->codec->delimiter_spec->_to_delimiter_for_join,
-				map {
-					my $field = $record->$_ // '';
-					ref $field ? $field->{text} : $field
-				} @fields[2..$last_field]
+				$map_fields->( @fields[2..$last_field] )
 			);
 		} else {
 			$joined_records = join(
 				$self->codec->delimiter_spec->field_sep,
-				map {
-					my $field = $record->$_ // '';
-					ref $field ? $field->{text} : $field
-				} @fields[0..$last_field]
+				$map_fields->( @fields[0..$last_field] )
 			);
 		}
 		$message_as_outline .=  ("  " x $level) .  $joined_records . "\n";
