@@ -5,7 +5,6 @@ use Test::Most tests => 3;
 use lib 't/lib';
 
 use Epidermis::Protocol::CLSI::LIS::LIS02A2;
-use Epidermis::Protocol::CLSI::LIS::Constants qw(RECORD_SEP);
 use Epidermis::Protocol::CLSI::LIS::LIS02A2::Codec;
 use List::AllUtils qw(pairmap);
 
@@ -230,14 +229,10 @@ EOF
 
 	my @messages;
 	for my $message (@data) {
-		my $text = $message->{text} =~ s/\n/\r/gsr;
-		my @records =
-			map { s/^\s*//sgr }
-			split /\Q@{[ RECORD_SEP ]}\E/, $text;
-		my $lis_msg = Epidermis::Protocol::CLSI::LIS::LIS02A2::Message->new;
-		for my $record (@records) {
-			$lis_msg->add_record_text($record);
-		}
+		my $text = $message->{text}
+			=~ s/^(?<indent>\s*)//mgr
+			=~ s/\n/\r/gsr;  # record separator
+		my $lis_msg = Epidermis::Protocol::CLSI::LIS::LIS02A2::Message->create_message( $text );
 
 		is $lis_msg->as_outline, $message->{text},
 			'Message outline round-trip';

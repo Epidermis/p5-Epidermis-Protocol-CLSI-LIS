@@ -6,6 +6,8 @@ use MooX::HandlesVia;
 
 use Types::Standard qw(ArrayRef ConsumerOf);
 
+use Epidermis::Protocol::CLSI::LIS::Constants qw(RECORD_SEP);
+
 has codec => (
 	is => 'rw',
 	predicate => 1,
@@ -89,6 +91,20 @@ sub as_outline {
 	}
 
 	return $message_as_outline;
+}
+
+sub create_message {
+	my ($class, $message_text) = @_;
+
+	my @records = split /\Q@{[ RECORD_SEP ]}\E/, $message_text;
+
+	my $message = $class->new;
+
+	for my $record (@records) {
+		$message->add_record_text($record);
+	}
+
+	$message;
 }
 
 1;
