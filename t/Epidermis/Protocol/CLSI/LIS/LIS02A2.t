@@ -235,7 +235,7 @@ EOF
 		my $lis_msg = Epidermis::Protocol::CLSI::LIS::LIS02A2::Message->create_message( $text );
 
 		is $lis_msg->as_outline, $message->{text},
-			'Message outline round-trip';
+			"Message outline round-trip: $message->{id}";
 	}
 };
 
