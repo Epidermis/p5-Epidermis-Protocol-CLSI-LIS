@@ -96,6 +96,17 @@ subtest "Test message creation from text" => sub {
 		  43|L|1
 		EOF
 	};
+
+	subtest "Does not start with message header" => sub {
+		my $lis_msg;
+		my $no_header = $text =~ s/\A\QH|\E[^\r]+\r//gsr;
+		#note YYY($no_header);
+		throws_ok {
+			$lis_msg = Message->create_message(
+				$no_header
+			);
+		} 'failure::LIS02A2::Codec::InvalidMessageHeader';
+	};
 };
 
 done_testing;
