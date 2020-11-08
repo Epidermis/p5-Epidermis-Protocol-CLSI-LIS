@@ -115,6 +115,12 @@ sub as_outline {
 
 	my $records = $self->records;
 
+	return $self->_as_outline_records( $records );
+}
+
+sub _as_outline_records {
+	my ($self, $records) = @_;
+
 	my $message_as_outline = "";
 	my $previous_level = 0;
 
