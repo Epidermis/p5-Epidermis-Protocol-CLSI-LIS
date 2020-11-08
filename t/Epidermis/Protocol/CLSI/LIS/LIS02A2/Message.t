@@ -122,7 +122,6 @@ subtest "Test message creation from text" => sub {
 		};
 
 		subtest "Non-sequential" => sub {
-			TODO: { local $TODO = 'Broken non-sequential record sequences';
 			my $lis_msg;
 			# P|2 occurs after processing all of the children of P|1
 			my $wrong_sequence = $text =~ s/\r\QP|2|\E/\rP|3|/sr;
@@ -133,9 +132,6 @@ subtest "Test message creation from text" => sub {
 				);
 			} 'failure::LIS02A2::Message::InvalidRecordNumberSequence';
 
-			note $lis_msg->as_outline;
-			note $lis_msg->tree_dag_node->dump_names;
-			}
 		};
 	};
 };

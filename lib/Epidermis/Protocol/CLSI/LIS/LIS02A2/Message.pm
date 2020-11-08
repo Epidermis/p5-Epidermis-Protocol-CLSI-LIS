@@ -86,6 +86,11 @@ sub _handle_stack {
 			return;
 		} elsif( $record->_level < @$stack ) {
 			while( $record->_level < @$stack ) {
+				if( $record->type_id eq $records->[ $stack->[-1] ]->type_id ) {
+					if( ! $self->_check_record_increment_sequence($records->[ $stack->[-1] ], $record) ) {
+						failure::LIS02A2::Message::InvalidRecordNumberSequence->throw;
+					}
+				}
 				pop @$stack;
 			}
 			$self->_handle_stack( $stack, $records, $record, $record_idx );
