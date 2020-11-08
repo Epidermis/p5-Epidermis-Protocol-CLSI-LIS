@@ -68,9 +68,7 @@ subtest "Standard data" => sub {
 	my @data = @{ StandardData->lis02a2_standard_data };
 	my @messages;
 	for my $message (@data) {
-		my $text = $message->{text}
-			=~ s/^(?<indent>\s*)//mgr
-			=~ s/\n/\r/gsr;  # record separator
+		my $text = StandardData->lis02a2_standard_data_text_to_message_text($message->{text});
 		my $lis_msg = Epidermis::Protocol::CLSI::LIS::LIS02A2::Message->create_message( $text );
 
 		is $lis_msg->as_outline, $message->{text},

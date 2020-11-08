@@ -168,4 +168,12 @@ EOF
 	\@data;
 }
 
+sub lis02a2_standard_data_text_to_message_text {
+	my ($class, $data_text) = @_;
+	my $message_text = $data_text
+		=~ s/^(?<indent>\s*)//mgr
+		=~ s/\n/\r/gsr;  # record separator
+	return $message_text;
+}
+
 1;
