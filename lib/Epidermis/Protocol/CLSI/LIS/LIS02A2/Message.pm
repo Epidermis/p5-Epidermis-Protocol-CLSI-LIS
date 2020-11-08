@@ -13,6 +13,7 @@ use aliased 'Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageTerminator'
 
 use failures qw(
 	LIS02A2::Message::InvalidRecordNumberSequence
+	LIS02A2::Message::InvalidRecordNumberSequence::First
 	LIS02A2::Message::InvalidRecordLevel
 	LIS02A2::Message::RecordAfterEndRecord
 );
@@ -65,6 +66,11 @@ sub _check_record_increment_sequence {
 	$first->sequence->{data} + 1 == $second->sequence->{data};
 }
 
+sub _check_record_first_sequence {
+	my ($self, $record) = @_;
+	$record->sequence->{data} == 1;
+}
+
 sub _handle_stack {
 	my ($self, $stack, $records, $record, $record_idx) = @_;
 	if( @$stack == 0 ) {
@@ -82,6 +88,11 @@ sub _handle_stack {
 		return;
 	} else {
 		if( ! defined $record->_level || $record->_level == @$stack ) {
+			# this is first time incrementing level, so check if
+			# sequence is 1
+			if( ! $self->_check_record_first_sequence($record) ) {
+				failure::LIS02A2::Message::InvalidRecordNumberSequence::First->throw;
+			}
 			push @$stack, $record_idx;
 			return;
 		} elsif( $record->_level < @$stack ) {
@@ -89,8 +100,13 @@ sub _handle_stack {
 				if( $record->type_id eq $records->[ $stack->[-1] ]->type_id ) {
 					if( ! $self->_check_record_increment_sequence($records->[ $stack->[-1] ], $record) ) {
 						failure::LIS02A2::Message::InvalidRecordNumberSequence->throw;
+					} else {
+						pop @$stack;
+						push @$stack, $record_idx;
+						return;
 					}
 				}
+
 				pop @$stack;
 			}
 			$self->_handle_stack( $stack, $records, $record, $record_idx );

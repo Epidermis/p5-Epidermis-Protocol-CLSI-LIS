@@ -143,6 +143,17 @@ subtest "Test message creation from text" => sub {
 				);
 			} 'failure::LIS02A2::Message::InvalidRecordNumberSequence';
 		};
+
+		subtest "First of new level should start with sequence 1" => sub {
+			my $lis_msg;
+			my $wrong_sequence = $text =~ s/\r\QR|1|^^^GLU|91.5\E/\rR|2|^^^GLU|91.5/sr;
+			note $wrong_sequence =~ s/\r/\n/sgr;
+			throws_ok {
+				$lis_msg = $MessageWTree->create_message(
+					$wrong_sequence
+				);
+			} 'failure::LIS02A2::Message::InvalidRecordNumberSequence::First';
+		};
 	};
 };
 
