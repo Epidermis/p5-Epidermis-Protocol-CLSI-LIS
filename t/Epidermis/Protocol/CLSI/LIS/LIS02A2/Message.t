@@ -27,7 +27,7 @@ subtest "Test message creation from text" => sub {
 
 	subtest "Create incomplete message" => sub {
 		my $lis_msg;
-		my $incomplete_text = $text =~ s/\rL|1\r\Z//gsr;
+		my $incomplete_text = $text =~ s/\r\QL|1\E\r\Z//gsr;
 		#note YYY($incomplete_text);
 		lives_ok {
 			$lis_msg = Epidermis::Protocol::CLSI::LIS::LIS02A2::Message->create_message(
