@@ -7,6 +7,16 @@ use MooX::HandlesVia;
 use Types::Standard qw(ArrayRef ConsumerOf);
 
 use Epidermis::Protocol::CLSI::LIS::Constants qw(RECORD_SEP);
+use Epidermis::Protocol::CLSI::LIS::LIS02A2::Codec;
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageHeader';
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageTerminator';
+
+use failures qw(
+	LIS02A2::Message::InvalidRecordNumberSequence
+	LIS02A2::Message::InvalidRecordNumberSequence::First
+	LIS02A2::Message::InvalidRecordLevel
+	LIS02A2::Message::RecordAfterEndRecord
+);
 
 has codec => (
 	is => 'rw',
@@ -24,6 +34,12 @@ has records => (
 		number_of_records => 'count',
 		_push_record => 'push',
 	},
+);
+
+has _records_stack => (
+	is => 'ro',
+	isa => ArrayRef[ConsumerOf['Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record']],
+	default => sub { [] },
 );
 
 sub _set_codec_from_record_text {
@@ -45,9 +61,74 @@ sub add_record_text {
 	$self->add_record( $data );
 }
 
+sub _check_record_increment_sequence {
+	my ($self, $first, $second) = @_;
+	$first->sequence->{data} + 1 == $second->sequence->{data};
+}
+
+sub _check_record_first_sequence {
+	my ($self, $record) = @_;
+	$record->sequence->{data} == 1;
+}
+
+sub _handle_stack {
+	my ($self, $stack, $records, $record, $record_idx) = @_;
+	if( @$stack == 0 ) {
+		push @$stack, $record_idx;
+		return;
+	}
+
+	if( $records->[ $stack->[-1] ]->type_id eq $record->type_id ) {
+		my $last_idx = pop @$stack;
+		if( ! $self->_check_record_increment_sequence($records->[ $last_idx ], $record) ) {
+			failure::LIS02A2::Message::InvalidRecordNumberSequence->throw;
+		}
+
+		push @$stack, $record_idx;
+		return;
+	} else {
+		if( ! defined $record->_level || $record->_level == @$stack ) {
+			# this is first time incrementing level, so check if
+			# sequence is 1
+			if( ! $self->_check_record_first_sequence($record) ) {
+				failure::LIS02A2::Message::InvalidRecordNumberSequence::First->throw;
+			}
+			push @$stack, $record_idx;
+			return;
+		} elsif( $record->_level < @$stack ) {
+			while( $record->_level < @$stack ) {
+				if( $record->type_id eq $records->[ $stack->[-1] ]->type_id ) {
+					if( ! $self->_check_record_increment_sequence($records->[ $stack->[-1] ], $record) ) {
+						failure::LIS02A2::Message::InvalidRecordNumberSequence->throw;
+					} else {
+						pop @$stack;
+						push @$stack, $record_idx;
+						return;
+					}
+				}
+
+				pop @$stack;
+			}
+			$self->_handle_stack( $stack, $records, $record, $record_idx );
+		} else {
+			failure::LIS02A2::Message::InvalidRecordLevel->throw;
+		}
+	}
+}
+
 sub add_record {
 	my ($self, $record) = @_;
-	# TODO check sequence and level
+	failure::LIS02A2::Message::RecordAfterEndRecord->throw
+		if( $self->is_complete );
+
+	if( $self->is_empty
+		&& $record->type_id ne MessageHeader->type_id ) {
+		failure::LIS02A2::Message::InvalidRecordLevel->throw;
+	}
+
+	# Check sequence and level
+	$self->_handle_stack( $self->_records_stack, $self->records,
+		$record, $self->number_of_records );
 	$self->_push_record( $record );
 }
 
@@ -56,41 +137,63 @@ sub as_outline {
 
 	my $records = $self->records;
 
+	return $self->_as_outline_records( $records );
+}
+
+sub _as_outline_records {
+	my ($self, $records) = @_;
+
 	my $message_as_outline = "";
 	my $previous_level = 0;
 
 	for my $record (@$records) {
 		my $level = ! defined $record->_level ? $previous_level : $record->_level;
-		my @fields = $record->_fields;
-		my $joined_records;
-		my $last_field =
-			$record->can('_number_of_decoded_fields')
-				&& $record->_number_of_decoded_fields
-			? $record->_number_of_decoded_fields - 1
-			: $#fields;
-		if( $record->type_id eq 'H' ) {
-			$joined_records = join(
-				$self->codec->delimiter_spec->field_sep,
-				$record->type_id . $self->codec->delimiter_spec->_to_delimiter_for_join,
-				map {
-					my $field = $record->$_ // '';
-					ref $field ? $field->{text} : $field
-				} @fields[2..$last_field]
-			);
-		} else {
-			$joined_records = join(
-				$self->codec->delimiter_spec->field_sep,
-				map {
-					my $field = $record->$_ // '';
-					ref $field ? $field->{text} : $field
-				} @fields[0..$last_field]
-			);
-		}
+		my $joined_records = $self->_record_to_text($record);
 		$message_as_outline .=  ("  " x $level) .  $joined_records . "\n";
 		$previous_level = $level;
 	}
 
 	return $message_as_outline;
+}
+
+sub _record_to_text {
+	my ($self, $record) = @_;
+
+	my @fields = $record->_fields;
+	my $joined_records;
+	my $last_field =
+		$record->can('_number_of_decoded_fields')
+			&& $record->_number_of_decoded_fields
+		? $record->_number_of_decoded_fields - 1
+		: $#fields;
+	my $map_fields = sub {
+		map {
+			my $field = $record->$_ // '';
+			ref $field ? $field->{text} : $field
+		} @_;
+	};
+	if( $record->type_id eq 'H' ) {
+		$joined_records = join(
+			$self->codec->delimiter_spec->field_sep,
+			$record->type_id . $self->codec->delimiter_spec->_to_delimiter_for_join,
+			$map_fields->( @fields[2..$last_field] )
+		);
+	} else {
+		$joined_records = join(
+			$self->codec->delimiter_spec->field_sep,
+			$map_fields->( @fields[0..$last_field] )
+		);
+	}
+
+	return $joined_records;
+}
+
+sub _dump_record_stack_outline {
+	my ($self) = @_;
+
+	print $self->_as_outline_records( [
+		map { $self->records->[$_] } @{ $self->_records_stack }
+	]);
 }
 
 sub create_message {
@@ -105,6 +208,11 @@ sub create_message {
 	}
 
 	$message;
+}
+
+sub is_complete {
+	my ($self) = @_;
+	! $self->is_empty && $self->records->[-1]->type_id eq MessageTerminator->type_id;
 }
 
 1;
