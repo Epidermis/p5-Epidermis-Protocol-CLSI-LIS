@@ -126,36 +126,44 @@ sub _as_outline_records {
 
 	for my $record (@$records) {
 		my $level = ! defined $record->_level ? $previous_level : $record->_level;
-		my @fields = $record->_fields;
-		my $joined_records;
-		my $last_field =
-			$record->can('_number_of_decoded_fields')
-				&& $record->_number_of_decoded_fields
-			? $record->_number_of_decoded_fields - 1
-			: $#fields;
-		my $map_fields = sub {
-			map {
-				my $field = $record->$_ // '';
-				ref $field ? $field->{text} : $field
-			} @_;
-		};
-		if( $record->type_id eq 'H' ) {
-			$joined_records = join(
-				$self->codec->delimiter_spec->field_sep,
-				$record->type_id . $self->codec->delimiter_spec->_to_delimiter_for_join,
-				$map_fields->( @fields[2..$last_field] )
-			);
-		} else {
-			$joined_records = join(
-				$self->codec->delimiter_spec->field_sep,
-				$map_fields->( @fields[0..$last_field] )
-			);
-		}
+		my $joined_records = $self->_record_to_text($record);
 		$message_as_outline .=  ("  " x $level) .  $joined_records . "\n";
 		$previous_level = $level;
 	}
 
 	return $message_as_outline;
+}
+
+sub _record_to_text {
+	my ($self, $record) = @_;
+
+	my @fields = $record->_fields;
+	my $joined_records;
+	my $last_field =
+		$record->can('_number_of_decoded_fields')
+			&& $record->_number_of_decoded_fields
+		? $record->_number_of_decoded_fields - 1
+		: $#fields;
+	my $map_fields = sub {
+		map {
+			my $field = $record->$_ // '';
+			ref $field ? $field->{text} : $field
+		} @_;
+	};
+	if( $record->type_id eq 'H' ) {
+		$joined_records = join(
+			$self->codec->delimiter_spec->field_sep,
+			$record->type_id . $self->codec->delimiter_spec->_to_delimiter_for_join,
+			$map_fields->( @fields[2..$last_field] )
+		);
+	} else {
+		$joined_records = join(
+			$self->codec->delimiter_spec->field_sep,
+			$map_fields->( @fields[0..$last_field] )
+		);
+	}
+
+	return $joined_records;
 }
 
 sub create_message {
