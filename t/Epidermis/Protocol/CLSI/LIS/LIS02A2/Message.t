@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use Test::Most tests => 1;
+use Test::Most tests => 2;
 
 use lib 't/lib';
 use StandardData;
@@ -155,6 +155,20 @@ subtest "Test message creation from text" => sub {
 			} 'failure::LIS02A2::Message::InvalidRecordNumberSequence::First';
 		};
 	};
+};
+
+subtest "Create ASCII trees of data" => sub {
+	for my $data (@{ StandardData->lis02a2_standard_data }) {
+		my $msg = $MessageWTree->create_message(
+			StandardData->lis02a2_standard_data_text_to_message_text(
+				$data->{text}
+			)
+		);
+		my $ascii_tree = join "\n", @{ $msg->tree_dag_node->draw_ascii_tree };
+		note "\nTree for $data->{id}:\n\n";
+		note $ascii_tree;
+	}
+	pass;
 };
 
 done_testing;
