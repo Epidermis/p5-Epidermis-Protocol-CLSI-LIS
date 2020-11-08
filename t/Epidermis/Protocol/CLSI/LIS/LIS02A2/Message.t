@@ -107,6 +107,37 @@ subtest "Test message creation from text" => sub {
 			);
 		} 'failure::LIS02A2::Codec::InvalidMessageHeader';
 	};
+
+	subtest "Invalid record number sequence" => sub {
+		subtest "Sequential" => sub {
+			my $lis_msg;
+			# C|2 occurs directly after C|1
+			my $wrong_sequence = $text =~ s/\r\QC|2|\E/\rC|3|/sr;
+			note YYY($wrong_sequence);
+			throws_ok {
+				$lis_msg = $MessageWTree->create_message(
+					$wrong_sequence
+				);
+			} 'failure::LIS02A2::Message::InvalidRecordNumberSequence';
+		};
+
+		subtest "Non-sequential" => sub {
+			TODO: { local $TODO = 'Broken non-sequential record sequences';
+			my $lis_msg;
+			# P|2 occurs after processing all of the children of P|1
+			my $wrong_sequence = $text =~ s/\r\QP|2|\E/\rP|3|/sr;
+			note YYY($wrong_sequence);
+			throws_ok {
+				$lis_msg = $MessageWTree->create_message(
+					$wrong_sequence
+				);
+			} 'failure::LIS02A2::Message::InvalidRecordNumberSequence';
+
+			note $lis_msg->as_outline;
+			note $lis_msg->tree_dag_node->dump_names;
+			}
+		};
+	};
 };
 
 done_testing;
