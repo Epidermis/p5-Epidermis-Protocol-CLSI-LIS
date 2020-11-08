@@ -5,10 +5,14 @@ use Test::Most tests => 1;
 use lib 't/lib';
 use StandardData;
 
-use Epidermis::Protocol::CLSI::LIS::LIS02A2::Message;
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS02A2::Message';
 
 use XXX;
 use List::AllUtils qw(first);
+
+my $MessageWTree = Moo::Role->create_class_with_roles(
+	Message,
+	qw(Epidermis::Protocol::CLSI::LIS::LIS02A2::Message::Role::TreeDAG) );
 
 subtest "Test message creation from text" => sub {
 	my $text = StandardData->lis02a2_standard_data_text_to_message_text(
@@ -20,7 +24,7 @@ subtest "Test message creation from text" => sub {
 		my $lis_msg;
 		#note YYY($text);
 		lives_ok {
-			$lis_msg = Epidermis::Protocol::CLSI::LIS::LIS02A2::Message->create_message( $text );
+			$lis_msg = Message->create_message( $text );
 		};
 		ok $lis_msg->is_complete, 'complete message';
 	};
@@ -30,7 +34,7 @@ subtest "Test message creation from text" => sub {
 		my $incomplete_text = $text =~ s/\r\QL|1\E\r\Z//gsr;
 		#note YYY($incomplete_text);
 		lives_ok {
-			$lis_msg = Epidermis::Protocol::CLSI::LIS::LIS02A2::Message->create_message(
+			$lis_msg = Message->create_message(
 				$incomplete_text
 			);
 		};
@@ -38,12 +42,9 @@ subtest "Test message creation from text" => sub {
 	};
 
 	subtest "Create message with tree" => sub {
-		my $Message = Moo::Role->create_class_with_roles(
-			'Epidermis::Protocol::CLSI::LIS::LIS02A2::Message',
-			qw(Epidermis::Protocol::CLSI::LIS::LIS02A2::Message::Role::TreeDAG) );
 		my $lis_msg;
 		lives_ok {
-			$lis_msg = $Message->create_message( $text );
+			$lis_msg = $MessageWTree->create_message( $text );
 		};
 		my $node_tree_names = join "", $lis_msg->tree_dag_node->dump_names;
 		note $node_tree_names;
