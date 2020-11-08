@@ -22,7 +22,7 @@ subtest "Test message creation from text" => sub {
 
 	subtest "Create message" => sub {
 		my $lis_msg;
-		#note YYY($text);
+		#note ($text =~ s/\r/\n/sgr);
 		lives_ok {
 			$lis_msg = Message->create_message( $text );
 		};
@@ -32,7 +32,7 @@ subtest "Test message creation from text" => sub {
 	subtest "Create incomplete message" => sub {
 		my $lis_msg;
 		my $incomplete_text = $text =~ s/\r\QL|1\E\r\Z//gsr;
-		#note YYY($incomplete_text);
+		#note ($incomplete_text =~ s/\r/\n/sgr);
 		lives_ok {
 			$lis_msg = Message->create_message(
 				$incomplete_text
@@ -100,7 +100,7 @@ subtest "Test message creation from text" => sub {
 	subtest "Does not start with message header" => sub {
 		my $lis_msg;
 		my $no_header = $text =~ s/\A\QH|\E[^\r]+\r//gsr;
-		#note YYY($no_header);
+		#note ($no_header =~ s/\r/\n/sgr);
 		throws_ok {
 			$lis_msg = Message->create_message(
 				$no_header
@@ -113,7 +113,7 @@ subtest "Test message creation from text" => sub {
 			my $lis_msg;
 			# C|2 occurs directly after C|1
 			my $wrong_sequence = $text =~ s/\r\QC|2|\E/\rC|3|/sr;
-			note YYY($wrong_sequence);
+			note $wrong_sequence =~ s/\r/\n/sgr;
 			throws_ok {
 				$lis_msg = $MessageWTree->create_message(
 					$wrong_sequence
@@ -126,7 +126,7 @@ subtest "Test message creation from text" => sub {
 			my $lis_msg;
 			# P|2 occurs after processing all of the children of P|1
 			my $wrong_sequence = $text =~ s/\r\QP|2|\E/\rP|3|/sr;
-			note YYY($wrong_sequence);
+			note $wrong_sequence =~ s/\r/\n/sgr;
 			throws_ok {
 				$lis_msg = $MessageWTree->create_message(
 					$wrong_sequence
