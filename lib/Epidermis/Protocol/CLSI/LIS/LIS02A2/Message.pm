@@ -166,6 +166,14 @@ sub _record_to_text {
 	return $joined_records;
 }
 
+sub _dump_record_stack_outline {
+	my ($self) = @_;
+
+	print $self->_as_outline_records( [
+		map { $self->records->[$_] } @{ $self->_records_stack }
+	]);
+}
+
 sub create_message {
 	my ($class, $message_text) = @_;
 
