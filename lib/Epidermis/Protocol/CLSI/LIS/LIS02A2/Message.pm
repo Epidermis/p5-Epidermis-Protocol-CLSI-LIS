@@ -7,6 +7,7 @@ use MooX::HandlesVia;
 use Types::Standard qw(ArrayRef ConsumerOf);
 
 use Epidermis::Protocol::CLSI::LIS::Constants qw(RECORD_SEP);
+use Epidermis::Protocol::CLSI::LIS::LIS02A2::Codec;
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageHeader';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageTerminator';
 
