@@ -131,7 +131,17 @@ subtest "Test message creation from text" => sub {
 					$wrong_sequence
 				);
 			} 'failure::LIS02A2::Message::InvalidRecordNumberSequence';
+		};
 
+		subtest "Non-sequential" => sub {
+			my $lis_msg;
+			my $wrong_sequence = $text =~ s/\r\QO|2|032989326\E/\rO|3|032989326/sr;
+			note $wrong_sequence =~ s/\r/\n/sgr;
+			throws_ok {
+				$lis_msg = $MessageWTree->create_message(
+					$wrong_sequence
+				);
+			} 'failure::LIS02A2::Message::InvalidRecordNumberSequence';
 		};
 	};
 };
