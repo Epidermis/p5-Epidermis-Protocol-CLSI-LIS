@@ -12,7 +12,7 @@ use IO::Termios;
 
 use autodie;
 
-use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Connection::Serial' => 'Connection::Serial';
+use aliased 'Epidermis::Lab::Connection::Serial' => 'Connection::Serial';
 
 sub create_serial_pty {
 	die unless which('socat');
