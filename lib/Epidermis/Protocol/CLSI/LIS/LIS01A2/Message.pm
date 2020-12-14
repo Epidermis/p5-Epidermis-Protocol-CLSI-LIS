@@ -60,12 +60,20 @@ sub add_frame {
 	$self->_push_frame( $frame );
 }
 
+sub split_message_data_into_frame_data {
+	my ($self, $message_data) = @_;
+
+	my @frame_data = unpack( "(A@{[ FRAME_DATA_MAX_LENGTH ]})*", $message_data);
+
+	\@frame_data;
+}
+
 sub create_message {
 	my ($class, $message_data) = @_;
 
 	my $message = $class->new;
 
-	my @frame_data = unpack( "(A@{[ FRAME_DATA_MAX_LENGTH ]})*", $message_data);
+	my @frame_data = @{ $message->split_message_data_into_frame_data( $message_data ) };
 	my $frame_number = $message->start_frame_number;
 	while( @frame_data ) {
 		my $content = shift @frame_data;
