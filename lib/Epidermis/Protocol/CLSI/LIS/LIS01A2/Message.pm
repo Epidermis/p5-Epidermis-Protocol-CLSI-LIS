@@ -69,9 +69,11 @@ sub split_message_data_into_frame_data {
 }
 
 sub create_message {
-	my ($class, $message_data) = @_;
+	my ($class, $message_data, $message_args ) = @_;
 
-	my $message = $class->new;
+	$message_args //= {};
+
+	my $message = $class->new( $message_args );
 
 	my @frame_data = @{ $message->split_message_data_into_frame_data( $message_data ) };
 	my $frame_number = $message->start_frame_number;
