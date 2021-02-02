@@ -4,6 +4,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::StateMachine;
 use Moo;
 use MooX::Enumeration;
 use Sub::Trigger::Lock;
+use List::AllUtils qw(first);
 
 use boolean;
 use Const::Fast;
@@ -21,10 +22,15 @@ sub _t {
 	my $event = $args{event} or die "Transition requires 'event' argument";
 	my $action = $args{action} or die "Transition requires 'action' argument";
 
+	my $sm = $self->_state_map;
 	die "Already have transition from $from to $to"
-		if exists $self->_state_map->{ $from }{ $to };
+		if exists $sm->{ $from }{ $to };
+	my $existing_to_for_event = first { $sm->{$from}{$_}{event} eq $event }
+		keys %{ $sm->{ $from } };
+	die "Already have event: [ $from ] -- $event -- [ $existing_to_for_event ], can not add event to [ $to ]"
+		if $existing_to_for_event;
 
-	$self->_state_map->{ $from }{ $to } = {
+	$sm->{ $from }{ $to } = {
 		event => $event,
 		action => ref $action ? $action : [ $action ],
 	};
