@@ -82,6 +82,7 @@ sub BUILD {
 sub reset {
 	my ($self, $context) = @_;
 	$self->session_state( STATE_N_IDLE );
+	$self->_set_device_to_neutral($context);
 }
 
 sub _set_device_to_sender {
@@ -92,6 +93,11 @@ sub _set_device_to_sender {
 sub _set_device_to_receiver {
 	my ($self, $context) = @_;
 	$context->device_type( DEVICE_RECEIVER );
+}
+
+sub _set_device_to_neutral {
+	my ($self, $context) = @_;
+	$context->device_type( DEVICE_NEUTRAL );
 }
 
 sub _has_data_to_send {
