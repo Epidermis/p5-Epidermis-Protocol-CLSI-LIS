@@ -136,7 +136,6 @@ enum_event => [
 enum_action => [
 	(
 	map {
-		print "$_\n";
 		$_ => lc( $_ =~ s/^ACTION_//r )
 	} @_ENUM_ACTION,
 	),
