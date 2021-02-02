@@ -79,6 +79,30 @@ sub BUILD {
 	$self->_t( from => STATE_S_TRANSFER_INTERRUPT, to => STATE_N_IDLE, event => EV_INTERRUPT_ACCEPT_OR_TIME_OUT, action => [ ACTION_SEND_EOT, ACTION_SET_DEVICE_TO_NEUTRAL ]);
 }
 
+sub to_plantuml {
+	my ($self) = @_;
+
+	my $map = $self->_state_map;
+
+	my $plantuml;
+	$plantuml .= "\@startuml\n\n";
+	$plantuml .= "[*] --> n_idle\n";
+	for my $from ( sort keys %$map ) {
+		for my $to ( sort keys %{ $map->{$from} } ) {
+			my $event = $map->{$from}{$to}{event};
+			my $action = $map->{$from}{$to}{action};
+			my $action_italics = join '\n', map { "//$_//" } @$action;
+			$plantuml .= "$from --> $to : $event\\n$action_italics";
+			$plantuml .= "\n";
+		}
+	}
+
+	$plantuml .= "\n";
+	$plantuml .= "\@enduml\n";
+
+	return $plantuml;
+}
+
 sub reset {
 	my ($self, $context) = @_;
 	$self->session_state( STATE_N_IDLE );
