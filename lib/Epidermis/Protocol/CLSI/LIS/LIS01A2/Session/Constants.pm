@@ -4,7 +4,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants;
 use Modern::Perl;
 
 our @_ENUM_SYSTEM = qw(SYSTEM_INSTRUMENT SYSTEM_COMPUTER);
-our @_ENUM_DEVICE = qw(DEVICE_SENDER DEVICE_RECEIVER DEVICE_NONE);
+our @_ENUM_DEVICE = qw(DEVICE_SENDER DEVICE_RECEIVER DEVICE_NEUTRAL);
 
 # STATE_N           : neutral
 # STATE_R           : receiver
