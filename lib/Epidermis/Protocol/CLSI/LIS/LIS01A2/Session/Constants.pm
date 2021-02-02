@@ -103,43 +103,52 @@ use Const::Exporter;
 Const::Exporter->import(
 enum_system => [
 	(
-	map {
+	our %_ENUM_SYSTEM_VALUES = map {
 		$_ => lc( $_ =~ s/^SYSTEM_//r )
 	} @_ENUM_SYSTEM,
 	),
-	'@ENUM_SYSTEM' => [ @_ENUM_SYSTEM ],
+	'@ENUM_SYSTEM' => [ values %_ENUM_SYSTEM_VALUES ],
 ],
 enum_device => [
 	(
-	map {
+	our %_ENUM_DEVICE_VALUES = map {
 		$_ => lc( $_ =~ s/^DEVICE_//r )
 	} @_ENUM_DEVICE,
 	),
-	'@ENUM_DEVICE' => [ @_ENUM_DEVICE ],
+	'@ENUM_DEVICE' => [ values %_ENUM_DEVICE_VALUES ],
 ],
 enum_state => [
 	(
-	map {
+	our %_ENUM_STATE_VALUES = map {
 		$_ => lc( $_ =~ s/^STATE_//r )
 	} @_ENUM_STATE,
 	),
-	'@ENUM_STATE' => [ @_ENUM_STATE ],
+	'@ENUM_STATE' => [ values %_ENUM_STATE_VALUES ],
 ],
 enum_event => [
 	(
-	map {
+	our %_ENUM_EVENT_VALUES = map {
 		$_ => lc( $_ =~ s/^EV_//r )
 	} @_ENUM_EVENT,
 	),
-	'@ENUM_EVENT' => [ @_ENUM_EVENT ],
+	'@ENUM_EVENT' => [ values %_ENUM_EVENT_VALUES ],
 ],
 enum_action => [
 	(
-	map {
+	our %_ENUM_ACTION_VALUES = map {
 		$_ => lc( $_ =~ s/^ACTION_//r )
 	} @_ENUM_ACTION,
 	),
-	'@ENUM_ACTION' => [ @_ENUM_ACTION ],
+	'@ENUM_ACTION' => [ values %_ENUM_ACTION_VALUES ],
+],
+);
+
+Const::Exporter->import(
+enum_device => [
+	DEVICE__START_DEVICE => DEVICE_NEUTRAL(),
+],
+enum_state => [
+	STATE__START_STATE => STATE_N_IDLE(),
 ],
 );
 

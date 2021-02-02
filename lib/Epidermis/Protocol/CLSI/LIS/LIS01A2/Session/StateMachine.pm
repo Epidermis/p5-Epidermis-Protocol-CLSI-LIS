@@ -92,7 +92,7 @@ sub to_plantuml {
 
 	my $plantuml;
 	$plantuml .= "\@startuml\n\n";
-	$plantuml .= "[*] --> n_idle\n";
+	$plantuml .= "[*] --> @{[ STATE__START_STATE ]}\n";
 	for my $from ( sort keys %$map ) {
 		for my $to ( sort keys %{ $map->{$from} } ) {
 			my $event = $map->{$from}{$to}{event};
@@ -111,7 +111,7 @@ sub to_plantuml {
 
 sub reset {
 	my ($self, $context) = @_;
-	$self->session_state( STATE_N_IDLE );
+	$self->session_state( STATE__START_STATE );
 	$self->_set_device_to_neutral($context);
 }
 
