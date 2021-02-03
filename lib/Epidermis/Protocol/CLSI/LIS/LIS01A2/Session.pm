@@ -8,12 +8,6 @@ use Types::Standard qw(Enum Str);
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::StateMachine';
 
-use Epidermis::Protocol::CLSI::LIS::Constants qw(
-	ENQ
-	EOT
-	ACK NAK
-);
-
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_system :enum_device :enum_state :enum_event :enum_action);
 
@@ -54,5 +48,12 @@ sub send_message {
 sub _send_frame {
 	...
 }
+
+with qw(
+	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Device
+	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Control
+	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::FrameNumber
+	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Retry
+);
 
 1;
