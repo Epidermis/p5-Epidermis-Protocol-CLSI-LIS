@@ -1,6 +1,8 @@
 package StandardData;
 # ABSTRACT: Data from standard
 
+use List::AllUtils qw(first);
+
 sub lis02a2_standard_data {
 	my @data = (
 		#{
@@ -174,6 +176,14 @@ sub lis02a2_standard_data_text_to_message_text {
 		=~ s/^(?<indent>\s*)//mgr
 		=~ s/\n/\r/gsr;  # record separator
 	return $message_text;
+}
+
+sub get_message_text_by_id {
+	my ($class, $id) = @_;
+	my $text = $class->lis02a2_standard_data_text_to_message_text(
+		( first { $_->{id} eq $id } @{ $class->lis02a2_standard_data } )
+			->{text}
+	);
 }
 
 1;
