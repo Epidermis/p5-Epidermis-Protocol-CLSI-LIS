@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Control;
 # ABSTRACT: Control character actions
 
 use Moo::Role;
+use Future::AsyncAwait;
 
 use Epidermis::Protocol::CLSI::LIS::Constants qw(
 	ENQ
@@ -9,22 +10,22 @@ use Epidermis::Protocol::CLSI::LIS::Constants qw(
 	ACK NAK
 );
 
-requires 'connection';
+requires '_send_data';
 
-sub do_send_enq {
-	$_[0]->connection->handle->print( ENQ );
+async sub do_send_enq {
+	$_[0]->_send_data( ENQ );
 }
 
-sub do_send_eot {
-	$_[0]->connection->handle->print( EOT );
+async sub do_send_eot {
+	$_[0]->_send_data( EOT );
 }
 
-sub do_send_ack {
-	$_[0]->connection->handle->print( ACK );
+async sub do_send_ack {
+	$_[0]->_send_data( ACK );
 }
 
-sub do_send_nak {
-	$_[0]->connection->handle->print( NAK );
+async sub do_send_nak {
+	$_[0]->_send_data( NAK );
 }
 
 1;
