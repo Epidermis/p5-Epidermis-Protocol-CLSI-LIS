@@ -139,8 +139,15 @@ sub to_plantuml {
 	return $plantuml;
 }
 
+sub process_event {
+	my ($self, $session, $event) = @_;
+	my $current_state = $session->session_state;
 
+	my $to = $self->_get_transition_from_state_for_event( $current_state, $event );
 
+	die "No transition from state [ $current_state ] via event $event" unless $to;
 
+	return $to;
+}
 
 1;
