@@ -2,17 +2,34 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::StateMachine;
 # ABSTRACT: A state machine for the session
 
 use Moo;
-use MooX::Enumeration;
-use Sub::Trigger::Lock;
+use MooX::Should;
+use Devel::StrictMode;
+use Sub::Trigger::Lock qw( Lock unlock );
 use List::AllUtils qw(first);
 
-use boolean;
-use Const::Fast;
+use Types::Standard qw(Map Enum Dict ArrayRef);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
-	qw(:enum_device :enum_state :enum_event :enum_action);
+	qw(:enum_state :enum_event :enum_action);
 
-has _state_map => ( is => 'ro', default => sub { +{} } );
+# Document layout of state map.
+our $StateMapType = Map[
+	Enum[@ENUM_STATE],
+	Map[
+		Enum[@ENUM_STATE],
+		Dict[
+			event => Enum[@ENUM_EVENT],
+			action => ArrayRef[Enum[@ENUM_ACTION]],
+		]
+	]
+];
+
+has _state_map => (
+	is => 'ro',
+	default => sub { +{} },
+	trigger => Lock,
+	should => $StateMapType,
+);
 
 sub _t {
 	my ($self, %args) = @_;
@@ -38,6 +55,8 @@ sub _t {
 
 sub BUILD {
 	my ($self, $args) = @_;
+
+	my $unlock_state_map = unlock( $self->_state_map );
 
 	# Neutral Device
 	$self->_t( from => STATE_N_IDLE, to => STATE_S_ESTABLISH_SEND_DATA, event => EV_HAS_DATA_TO_SEND, action => ACTION_SET_DEVICE_TO_SENDER  );
@@ -83,6 +102,8 @@ sub BUILD {
 
 	$self->_t( from => STATE_S_TRANSFER_INTERRUPT, to => STATE_S_TRANSFER_SETUP_NEXT_FRAME, event => EV_INTERRUPT_IGNORE, action => [ ACTION_RESET_RETRY_COUNT, ACTION_INCREMENT_FN ]);
 	$self->_t( from => STATE_S_TRANSFER_INTERRUPT, to => STATE_N_IDLE, event => EV_INTERRUPT_ACCEPT_OR_TIME_OUT, action => [ ACTION_SEND_EOT, ACTION_SET_DEVICE_TO_NEUTRAL ]);
+
+	$StateMapType->assert_valid( $self->_state_map ) if STRICT;
 }
 
 sub to_plantuml {
