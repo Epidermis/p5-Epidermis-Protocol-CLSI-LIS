@@ -40,10 +40,11 @@ sub _t {
 	my $action = $args{action} or die "Transition requires 'action' argument";
 
 	my $sm = $self->_state_map;
+
 	die "Already have transition from $from to $to"
 		if exists $sm->{ $from }{ $to };
-	my $existing_to_for_event = first { $sm->{$from}{$_}{event} eq $event }
-		keys %{ $sm->{ $from } };
+
+	my $existing_to_for_event = $self->_get_transition_from_state_for_event($from, $event);
 	die "Already have event: [ $from ] -- $event -- [ $existing_to_for_event ], can not add event to [ $to ]"
 		if $existing_to_for_event;
 
@@ -51,6 +52,14 @@ sub _t {
 		event => $event,
 		action => ref $action ? $action : [ $action ],
 	};
+}
+
+sub _get_transition_from_state_for_event {
+	my ($self, $from, $event ) = @_;
+
+	my $sm = $self->_state_map;
+	my $existing_to_for_event = first { $sm->{$from}{$_}{event} eq $event }
+		keys %{ $sm->{ $from } };
 }
 
 sub BUILD {
