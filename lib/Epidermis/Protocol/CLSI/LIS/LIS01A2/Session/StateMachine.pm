@@ -139,43 +139,8 @@ sub to_plantuml {
 	return $plantuml;
 }
 
-sub reset {
-	my ($self, $context) = @_;
-	$self->session_state( STATE__START_STATE );
-	$self->_set_device_to_neutral($context);
-}
 
-sub _set_device_to_sender {
-	my ($self, $context) = @_;
-	$context->device_type( DEVICE_SENDER );
-}
 
-sub _set_device_to_receiver {
-	my ($self, $context) = @_;
-	$context->device_type( DEVICE_RECEIVER );
-}
 
-sub _set_device_to_neutral {
-	my ($self, $context) = @_;
-	$context->device_type( DEVICE_NEUTRAL );
-}
-
-sub _has_data_to_send {
-	my ($self, $context) = @_;
-	# TODO
-	$context->has_data;
-}
-
-sub _on_receive_enq {
-	...
-}
-
-sub _on_is_busy {
-	...
-}
-
-sub _on_not_busy {
-	...
-}
 
 1;
