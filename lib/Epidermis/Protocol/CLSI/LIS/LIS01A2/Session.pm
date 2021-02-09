@@ -3,14 +3,22 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session;
 
 use Mu;
 
+use Future::AsyncAwait;
+use Future::IO;
 
-
-sub send_message {
-
-}
 
 sub _send_frame {
 	...
+}
+
+async sub _recv_data {
+	my ($self) = @_;
+	Future::IO->sysread( $self->connection->handle, 4096 );
+}
+
+async sub _send_data {
+	my ($self, $data) = @_;
+	Future::IO->syswrite( $self->connection->handle , $data );
 }
 
 with qw(
