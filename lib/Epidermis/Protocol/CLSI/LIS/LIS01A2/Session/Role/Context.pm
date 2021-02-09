@@ -7,7 +7,7 @@ use MooX::Enumeration;
 use Types::Standard qw(Enum);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
-	qw(:enum_system :enum_device :enum_state);
+	qw(:enum_system :enum_device);
 
 has connection => (
 	is => 'ro',
