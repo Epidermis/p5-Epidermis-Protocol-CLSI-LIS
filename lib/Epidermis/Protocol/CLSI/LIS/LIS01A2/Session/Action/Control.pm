@@ -28,4 +28,36 @@ async sub do_send_nak {
 	$_[0]->_send_data( NAK );
 }
 
+### EVENTS
+
+async sub event_on_receive_eot {
+	my ($self) = @_;
+	die unless $self->_cached_read eq EOT;
+}
+
+async sub event_on_receive_eot_or_time_out {
+	my ($self) = @_;
+	...;
+}
+
+async sub event_on_receive_enq_or_nak {
+	my ($self) = @_;
+	...;
+}
+
+async sub event_on_receive_enq {
+	my ($self) = @_;
+	...;
+}
+
+async sub event_on_receive_ack {
+	my ($self) = @_;
+	...;
+}
+
+async sub event_on_receive_nak_or_fail {
+	my ($self) = @_;
+	...;
+}
+
 1;
