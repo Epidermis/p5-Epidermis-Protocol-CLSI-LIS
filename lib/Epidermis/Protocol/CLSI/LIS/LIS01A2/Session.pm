@@ -114,6 +114,8 @@ with qw(
 	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Control
 	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::FrameNumber
 	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Retry
+
+	MooX::Role::Logger
 );
 
 1;
