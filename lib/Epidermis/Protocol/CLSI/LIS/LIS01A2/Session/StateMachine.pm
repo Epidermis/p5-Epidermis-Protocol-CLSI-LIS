@@ -154,7 +154,7 @@ sub process_event {
 
 	die "No transition from state [ $current_state ] via event $event" unless $to;
 
-	return $to;
+	return { to => $to, action => $self->_state_map->{ $current_state }{ $to }{action}  };
 }
 
 1;
