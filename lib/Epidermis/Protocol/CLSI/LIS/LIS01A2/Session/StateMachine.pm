@@ -62,6 +62,13 @@ sub _get_transition_from_state_for_event {
 		keys %{ $sm->{ $from } };
 }
 
+sub events_for_state {
+	my ($self, $state) = @_;
+	my $sm = $self->_state_map;
+	[ map { $sm->{$state}{$_}{event} }
+		keys %{ $sm->{ $state } } ];
+}
+
 sub BUILD {
 	my ($self, $args) = @_;
 
