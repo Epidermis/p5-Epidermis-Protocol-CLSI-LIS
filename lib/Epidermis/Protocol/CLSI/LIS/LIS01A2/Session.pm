@@ -72,6 +72,7 @@ async sub step {
 	my $events = $self->state_machine->events_for_state( $self->session_state );
 	do {
 		local $Data::Dumper::Terse = 1;
+		local $Data::Dumper::Indent = 0;
 		$self->_logger->debug( "State @{[ $self->session_state ]}: Events " . Dumper($events) )
 	} if $self->_logger->is_debug;
 	my @event_cb = @{ $self->_event_dispatch_table }{ @$events };
