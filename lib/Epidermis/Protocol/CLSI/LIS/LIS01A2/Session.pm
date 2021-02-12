@@ -2,10 +2,54 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session;
 # ABSTRACT: LIS01A2::Session - a total unit of communication activity
 
 use Mu;
+use MooX::HandlesVia;
+use MooX::Should;
+
+use Types::Standard qw(ArrayRef InstanceOf HashRef Dict);
 
 use Future::AsyncAwait;
 use Future::IO;
 
+our $MessageType = InstanceOf['Epidermis::Protocol::CLSI::LIS::LIS01A2::Message'];
+
+has _message_queue => (
+	is => 'ro',
+	default => sub { [] },
+	should => ArrayRef[
+		Dict[
+			message => $MessageType,
+			future  => InstanceOf['Future'],
+		]
+	],
+	handles_via => 'Array',
+	handles => {
+		_message_queue_is_empty => 'is_empty',
+		_message_queue_size => 'count',
+		_message_queue_enqueue => 'push',
+		_message_queue_dequeue => 'shift',
+		_message_queue_peek => 'shift',
+	},
+);
+
+has _future_data_to_send => (
+	is => 'ro',
+	should => InstanceOf['Future'],
+	default => sub { Future->new },
+);
+
+sub send_message {
+	my ($self, $message) = @_;
+	$MessageType->assert_valid( $message );
+	my $empty = $self->_message_queue_is_empty;
+	my $f = Future->new;
+	$self->_message_queue_enqueue( { message => $message, future => $f } );
+
+	if( $empty ) {
+		$self->_future_data_to_send->done
+	}
+
+	$f;
+}
 
 sub _send_frame {
 	...
