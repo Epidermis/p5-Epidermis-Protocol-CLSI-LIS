@@ -1,5 +1,5 @@
 package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::Dispatchable;
-# ABSTRACT: Dispatch tables for sessioni
+# ABSTRACT: Dispatch tables for session
 
 use Mu::Role;
 
