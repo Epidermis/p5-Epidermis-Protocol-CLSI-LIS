@@ -5,6 +5,8 @@ use Mu;
 use MooX::HandlesVia;
 use MooX::Should;
 
+use Data::Dumper;
+
 use Types::Standard qw(ArrayRef InstanceOf HashRef Dict);
 
 use Future::AsyncAwait;
@@ -68,6 +70,10 @@ async sub _send_data {
 async sub step {
 	my ($self) = @_;
 	my $events = $self->state_machine->events_for_state( $self->session_state );
+	do {
+		local $Data::Dumper::Terse = 1;
+		$self->_logger->debug( "State @{[ $self->session_state ]}: Events " . Dumper($events) )
+	} if $self->_logger->is_debug;
 	my @event_cb = @{ $self->_event_dispatch_table }{ @$events };
 	my $event = await Future->wait_any( @event_cb );
 }
