@@ -1,8 +1,10 @@
 package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Control;
 # ABSTRACT: Control character actions
 
-use Moo::Role;
+use Mu::Role;
 use Future::AsyncAwait;
+use Future::Buffer;
+use Future::IO;
 
 use Epidermis::Protocol::CLSI::LIS::Constants qw(
 	ENQ
@@ -11,6 +13,20 @@ use Epidermis::Protocol::CLSI::LIS::Constants qw(
 );
 
 requires '_send_data';
+
+lazy _buffer => sub {
+	my $buffer = Future::Buffer->new(
+		fill => async sub {
+				await Future::IO->sysread(\*STDIN, 4096);
+		}
+	);
+};
+
+has _timer => (
+	is => 'ro',
+);
+
+### ACTIONS
 
 async sub do_send_enq {
 	$_[0]->_send_data( ENQ );
