@@ -16,6 +16,9 @@ use aliased 'Epidermis::Lab::Connection::Serial' => 'Connection::Serial';
 use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat';
 use Try::Tiny;
 
+use Log::Any::Adapter;
+Log::Any::Adapter->set('Screen', min_level => 'trace' );
+
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_system);
 
