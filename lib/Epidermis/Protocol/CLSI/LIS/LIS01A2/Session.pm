@@ -65,6 +65,14 @@ async sub _send_data {
 	Future::IO->syswrite( $self->connection->handle , $data );
 }
 
+async sub step {
+	my ($self) = @_;
+	my $events = $self->state_machine->events_for_state( $self->session_state );
+	my @event_cb = @{ $self->_event_dispatch_table }{ @$events };
+	my $event = await Future->wait_any( @event_cb );
+}
+
+
 async sub event_on_good_frame {
 }
 async sub event_on_get_frame {
