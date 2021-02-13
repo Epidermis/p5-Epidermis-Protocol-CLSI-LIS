@@ -1,4 +1,4 @@
-package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Device;
+package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Device;
 # ABSTRACT: Device type actions
 
 use Moo::Role;

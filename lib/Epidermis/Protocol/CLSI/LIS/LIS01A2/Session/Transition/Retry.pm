@@ -1,4 +1,4 @@
-package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Retry;
+package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Retry;
 # ABSTRACT: Sender retry actions
 
 use Moo::Role;

@@ -1,4 +1,4 @@
-package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Control;
+package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Control;
 # ABSTRACT: Control character actions
 
 use Mu::Role;

@@ -117,10 +117,10 @@ with qw(
 	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::StateMachine
 	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::Dispatchable
 
-	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Device
-	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Control
-	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::FrameNumber
-	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::Retry
+	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Device
+	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Control
+	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::FrameNumber
+	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Retry
 
 	MooX::Role::Logger
 );

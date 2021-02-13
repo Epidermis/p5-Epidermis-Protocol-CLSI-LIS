@@ -1,4 +1,4 @@
-package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Action::FrameNumber;
+package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::FrameNumber;
 # ABSTRACT: Frame number actions
 
 use Mu::Role;
