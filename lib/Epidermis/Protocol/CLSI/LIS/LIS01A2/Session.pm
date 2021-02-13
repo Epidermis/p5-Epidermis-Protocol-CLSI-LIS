@@ -76,7 +76,7 @@ async sub step {
 		$self->_logger->debug( "State @{[ $self->session_state ]}: Events " . Dumper($events) )
 	} if $self->_logger->is_debug;
 	my @event_cb = @{ $self->_event_dispatch_table }{ @$events };
-	my $event = await Future->wait_any( @event_cb );
+	my $event = await Future->wait_any( map { $_->() } @event_cb );
 }
 
 
