@@ -1,5 +1,5 @@
 package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Control;
-# ABSTRACT: Control character actions
+# ABSTRACT: Session control transitions
 
 use Mu::Role;
 use Future::AsyncAwait;
@@ -74,6 +74,34 @@ async sub event_on_receive_ack {
 async sub event_on_receive_nak_or_fail {
 	my ($self) = @_;
 	...;
+}
+
+async sub event_on_establishment_timers_running {
+	...
+}
+
+async sub event_on_establishment_timers_timed_out {
+	...
+}
+
+async sub event_on_busy {
+	...
+}
+
+async sub event_on_not_busy {
+	...
+}
+
+async sub event_on_interrupt_ignore {
+	...
+}
+
+async sub event_on_interrupt_accept_or_time_out {
+	...
+}
+
+async sub event_on_timed_out {
+	...
 }
 
 1;
