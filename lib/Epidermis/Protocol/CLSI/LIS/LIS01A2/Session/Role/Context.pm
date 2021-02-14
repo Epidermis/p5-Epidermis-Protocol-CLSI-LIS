@@ -27,4 +27,9 @@ has device_type => (
 	default => sub { DEVICE__START_DEVICE },
 );
 
+sub CONTEXT_TO_STRING {
+	my ($self) = @_;
+	"[ Context: [ System: <@{[ $self->session_system ]}>, Device type: <@{[ $self->device_type ]}> ] ]";
+}
+
 1;

@@ -5,6 +5,9 @@ use Mu;
 use MooX::HandlesVia;
 use MooX::Should;
 
+use overload
+	'""' => \&TO_STRING;
+
 use Data::Dumper;
 
 use Types::Standard qw(ArrayRef InstanceOf HashRef Dict);
@@ -77,6 +80,11 @@ async sub step {
 	} if $self->_logger->is_debug;
 	my @event_cb = @{ $self->_event_dispatch_table }{ @$events };
 	my $event = await Future->wait_any( map { $_->() } @event_cb );
+}
+
+sub TO_STRING {
+	my ($self) = @_;
+	"Session: [ @{[ $self->STATE_TO_STRING ]}, @{[ $self->CONTEXT_TO_STRING ]} ]"
 }
 
 with qw(

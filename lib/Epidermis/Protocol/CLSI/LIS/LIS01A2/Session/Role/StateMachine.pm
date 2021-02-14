@@ -23,4 +23,9 @@ has session_state => (
 	default => sub { STATE__START_STATE },
 );
 
+sub STATE_TO_STRING {
+	my ($self) = @_;
+	"[ State: <@{[ $self->session_state ]}> ]";
+}
+
 1;
