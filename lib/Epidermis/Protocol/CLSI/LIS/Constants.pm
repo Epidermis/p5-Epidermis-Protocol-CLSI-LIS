@@ -26,6 +26,9 @@ constants => [
 
 	# The frame number begins at 1 with the first frame of the Transfer phase.
 	LIS01A2_FIRST_FRAME_NUMBER => 1,
+
+	# Maximum number of retries for sending frame on sender device.
+	LIS01A2_MAX_RETRIES => 6,
 ];
 
 1;
