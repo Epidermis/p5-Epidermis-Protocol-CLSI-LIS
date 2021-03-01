@@ -40,8 +40,8 @@ has _message_queue => (
 	},
 );
 
-has _future_data_to_send => (
-	is => 'ro',
+has _data_to_send_future => (
+	is => 'rw',
 	should => InstanceOf['Future'],
 	default => sub { Future->new },
 );
@@ -54,7 +54,7 @@ sub send_message {
 	$self->_message_queue_enqueue( { message => $message, future => $f } );
 
 	if( $empty ) {
-		$self->_future_data_to_send->done
+		$self->_data_to_send_future->done
 	}
 
 	$f;
