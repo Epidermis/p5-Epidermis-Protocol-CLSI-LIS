@@ -68,7 +68,7 @@ async sub _recv_data {
 	my ($self, $len) = @_;
 	my $data = await Future::IO->sysread_exactly( $self->connection->handle, $len );
 	do {
-		$self->_logger->trace( "Received data: "
+		$self->_logger->trace( "Received data <@{[ $self->session_system ]}>: "
 			. Data::Hexdumper::hexdump( data => $data, suppress_warnings => true ) )
 	} if DEBUG && $self->_logger->is_trace;
 	return $data;
@@ -77,7 +77,7 @@ async sub _recv_data {
 async sub _send_data {
 	my ($self, $data) = @_;
 	do {
-		$self->_logger->trace( "Sending data: "
+		$self->_logger->trace( "Sending data <@{[ $self->session_system ]}>: "
 			. Data::Hexdumper::hexdump( data => $data, suppress_warnings => true ) )
 	} if DEBUG && $self->_logger->is_trace;
 	await Future::IO->syswrite_exactly( $self->connection->handle , $data );
