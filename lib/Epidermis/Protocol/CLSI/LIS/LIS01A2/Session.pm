@@ -9,6 +9,7 @@ use overload
 	'""' => \&TO_STRING;
 
 use Data::Dumper;
+use Data::Hexdumper ();
 
 use Types::Standard qw(ArrayRef InstanceOf HashRef Dict);
 
@@ -66,10 +67,8 @@ async sub _recv_data {
 	my ($self, $len) = @_;
 	my $data = await Future::IO->sysread_exactly( $self->connection->handle, $len );
 	do {
-		local $Data::Dumper::Useqq = 1;
-		local $Data::Dumper::Terse = 1;
-		local $Data::Dumper::Indent = 0;
-		$self->_logger->trace( "Received data: " . Dumper($data) )
+		$self->_logger->trace( "Received data: "
+			. Data::Hexdumper::hexdump( data => $data) )
 	} if DEBUG && $self->_logger->is_trace;
 	return $data;
 }
@@ -77,10 +76,8 @@ async sub _recv_data {
 async sub _send_data {
 	my ($self, $data) = @_;
 	do {
-		local $Data::Dumper::Useqq = 1;
-		local $Data::Dumper::Terse = 1;
-		local $Data::Dumper::Indent = 0;
-		$self->_logger->trace( "Sending data: " . Dumper($data) )
+		$self->_logger->trace( "Sending data: "
+			. Data::Hexdumper::hexdump( data => $data) )
 	} if DEBUG && $self->_logger->is_trace;
 	await Future::IO->syswrite_exactly( $self->connection->handle , $data );
 }
