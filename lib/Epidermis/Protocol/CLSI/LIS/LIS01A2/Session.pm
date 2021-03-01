@@ -91,9 +91,40 @@ async sub step {
 		local $Data::Dumper::Indent = 0;
 		$self->_logger->debug( "State @{[ $self->session_state ]}: Events " . Dumper($events) )
 	} if $self->_logger->is_debug;
-	my @event_cb = @{ $self->_event_dispatch_table }{ @$events };
-	my $event = await Future->wait_any( map { $_->() } @event_cb );
+	my @events_cb = @{ $self->_event_dispatch_table }{ @$events };
+
+	my $transition_event = await Future->needs_any( map {
+		my $idx = $_;
+		my $f = $events_cb[$idx]->($self)
+			->transform( done => sub { $events->[$idx] } )
+			->set_label( $events->[$idx] )
+	} 0..@events_cb-1 )->set_label("$self : events");
+
+	my $from = $self->session_state;
+	my $transition_data = $self->state_machine->process_event(
+		$self,
+		$transition_event
+	);
+
+	do {
+		local $Data::Dumper::Terse = 1;
+		local $Data::Dumper::Indent = 0;
+		$self->_logger->debug( "Transition: [ @{[ $from ]} ] -- @{[ $transition_event ]} --> [ @{[ $transition_data->{to} ]} ]" )
+	} if $self->_logger->is_debug;
+
+	$self->session_state( $transition_data->{to} );
+
+	my @actions = @{ $transition_data->{action} };
+	my $actions_done = Future->needs_all( map {
+		my $action = $_;
+		my $f = $self->_action_dispatch_table->{$action}->($self)
+			->set_label($action)
+	} @actions)->set_label( 'actions' );
+
+	await $actions_done->followed_by( sub { $self->_reset_after_step } );
 }
+
+sub _reset_after_step { }
 
 sub TO_STRING {
 	my ($self) = @_;
