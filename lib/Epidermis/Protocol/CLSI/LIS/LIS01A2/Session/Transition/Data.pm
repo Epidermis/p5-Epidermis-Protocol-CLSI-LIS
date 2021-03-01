@@ -6,7 +6,7 @@ use Future::AsyncAwait;
 
 after _reset_after_step => sub {
 	my ($self) = @_;
-	#$self->_update_data_to_send_future;
+	$self->_update_data_to_send_future;
 };
 
 sub _update_data_to_send_future {
@@ -17,7 +17,7 @@ sub _update_data_to_send_future {
 	if( $self->_message_queue_size ) {
 		$self->_data_to_send_future( Future->done )
 	} else {
-		$self->_data_to_send_future( Future->fail( data => 'no data' ) )
+		$self->_data_to_send_future( Future->new )
 	}
 }
 
@@ -52,11 +52,13 @@ async sub event_on_get_frame {
 
 async sub event_on_has_data_to_send {
 	my ($self) = @_;
+	await $self->_data_to_send_future;
 	die unless $self->_data_to_send_future->is_done;
 }
 
 async sub event_on_not_has_data_to_send {
 	my ($self) = @_;
+	await $self->_data_to_send_future;
 	die if $self->_data_to_send_future->is_done;
 }
 
