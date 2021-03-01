@@ -40,6 +40,8 @@ use constant END_OF_FRAME_RE => do {
 requires '_recv_data';
 requires '_send_data';
 
+#### Read data
+
 lazy _buffer => sub {
 	my ($self) = @_;
 	my $buffer = Future::Buffer->new(
@@ -48,16 +50,6 @@ lazy _buffer => sub {
 		}
 	);
 };
-
-has _timer => (
-	is => 'rw',
-	default => sub {
-		+{
-			type => 'initial',
-			future => Future->done,
-		}
-	},
-);
 
 has _read_control_future => (
 	is => 'rw',
@@ -78,11 +70,6 @@ sub _read_control {
 	$f;
 }
 
-async sub time_out {
-	# TODO
-	die;
-};
-
 after _reset_after_step => sub {
 	my ($self) = @_;
 	if( $self->_has_read_control_future ) {
@@ -90,6 +77,34 @@ after _reset_after_step => sub {
 		$self->_clear_read_control_future;
 	}
 };
+
+#### Timer
+
+has _timer => (
+	is => 'rw',
+	default => sub {
+		+{
+			type => 'initial',
+			future => Future->done,
+		}
+	},
+);
+
+async sub time_out {
+	my ($self) = @_;
+	my $future = $self->_timer->{future};
+
+	my $timed_out;
+	await $future->on_cancel(sub {
+		$timed_out = 0;
+	})->on_done(sub {
+		$timed_out = 1;
+	});
+
+	return $timed_out;
+};
+
+#### Busy status
 
 has busy_cb => (
 	is => 'ro',
@@ -117,6 +132,16 @@ sub _status_busy {
 
 	$f;
 }
+
+after _reset_after_step => sub {
+	my ($self) = @_;
+	if( $self->_has_busy_future ) {
+		$self->_busy_future->cancel;
+		$self->_clear_busy_future;
+	}
+};
+
+#### Interrupt
 
 has interrupt_cb => (
 	is => 'ro',
