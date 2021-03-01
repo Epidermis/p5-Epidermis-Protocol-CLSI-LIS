@@ -9,6 +9,8 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 
 requires 'device_type';
 
+### ACTIONS
+
 async sub do_set_device_to_sender {
 	$_[0]->device_type( DEVICE_SENDER );
 }

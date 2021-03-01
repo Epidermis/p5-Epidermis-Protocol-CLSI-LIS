@@ -5,6 +5,14 @@ use Moo::Role;
 use Future::AsyncAwait;
 use boolean;
 
+### ACTIONS
+
+async sub do_nop {
+	true;
+}
+
+### EVENTS
+
 async sub event_on_any {
 	true;
 }

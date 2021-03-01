@@ -19,6 +19,8 @@ sub _increment_frame_number {
 	$self->_frame_number( ( $fn + 1 ) % 8 );
 }
 
+### ACTIONS
+
 async sub do_set_initial_fn {
 	$_[0]->_frame_number( LIS01A2_FIRST_FRAME_NUMBER );
 }

@@ -21,6 +21,8 @@ has _retries => (
 	default => sub { 0 },
 );
 
+### ACTIONS
+
 sub do_reset_retry_count {
 	my ($self) = @_;
 	$self->_retries(0);
@@ -30,6 +32,8 @@ sub do_increment_retry_count {
 	my ($self) = @_;
 	$self->_retries( $self->_retries + 1 );
 }
+
+### EVENTS
 
 async sub event_on_can_retry {
 	my ($self) = @_;
