@@ -278,12 +278,14 @@ async sub event_on_establishment_timers_timed_out {
 
 async sub event_on_busy {
 	my ($self) = @_;
-	die if ( await $self->_status_busy );
+	my $is_busy = await $self->_status_busy;
+	die unless $is_busy;
 }
 
 async sub event_on_not_busy {
 	my ($self) = @_;
-	die unless ( await $self->_status_busy );
+	my $is_busy = await $self->_status_busy;
+	die unless ! $is_busy;
 }
 
 async sub event_on_interrupt_ignore {
