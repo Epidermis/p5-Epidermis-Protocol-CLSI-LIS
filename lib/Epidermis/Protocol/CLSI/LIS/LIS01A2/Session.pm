@@ -12,6 +12,7 @@ use Data::Dumper;
 use Data::Hexdumper ();
 
 use Types::Standard qw(ArrayRef InstanceOf HashRef Dict);
+use boolean;
 
 use Future::AsyncAwait;
 use Future::IO;
@@ -68,7 +69,7 @@ async sub _recv_data {
 	my $data = await Future::IO->sysread_exactly( $self->connection->handle, $len );
 	do {
 		$self->_logger->trace( "Received data: "
-			. Data::Hexdumper::hexdump( data => $data) )
+			. Data::Hexdumper::hexdump( data => $data, suppress_warnings => true ) )
 	} if DEBUG && $self->_logger->is_trace;
 	return $data;
 }
@@ -77,7 +78,7 @@ async sub _send_data {
 	my ($self, $data) = @_;
 	do {
 		$self->_logger->trace( "Sending data: "
-			. Data::Hexdumper::hexdump( data => $data) )
+			. Data::Hexdumper::hexdump( data => $data, suppress_warnings => true ) )
 	} if DEBUG && $self->_logger->is_trace;
 	await Future::IO->syswrite_exactly( $self->connection->handle , $data );
 }
