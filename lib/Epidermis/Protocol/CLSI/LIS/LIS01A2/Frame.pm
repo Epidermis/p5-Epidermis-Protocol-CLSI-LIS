@@ -122,9 +122,15 @@ sub _compute_checksum {
 	sprintf( "%02X", unpack( "%8C*", $substring ) % 256 );
 }
 
-sub _chars_to_hex_re {
+sub _chars_to_hex_re_str {
 	my ($class, @chars) = @_;
 	my $hex_re = join '', map { sprintf "\\x%02x", ord($_) } @chars;
+	$hex_re;
+}
+
+sub _chars_to_hex_re {
+	my ($class, @chars) = @_;
+	my $hex_re = $class->_chars_to_hex_re_str(@chars);
 	qr/$hex_re/;
 }
 
@@ -162,7 +168,7 @@ sub parse_frame_data {
 
 	state $content_re = qr/
 		\G
-		(?<content> [^ @{[ $class->_chars_to_hex_re(@RESTRICTED) ]} ]*)
+		(?<content> [^@{[ $class->_chars_to_hex_re_str(@RESTRICTED) ]}]*)
 	/xsa;
 	if( $frame_data =~ /$content_re/g ) {
 		$content = $+{content}
@@ -172,7 +178,7 @@ sub parse_frame_data {
 
 	state $end_of_block_re = qr/
 		\G
-		(?<end_of_block> [@{[ $class->_chars_to_hex_re(values %FRAME_TYPE_TO_TX_CONTROL) ]}])
+		(?<end_of_block> [@{[ $class->_chars_to_hex_re_str(values %FRAME_TYPE_TO_TX_CONTROL) ]}])
 	/xsa;
 	if( $frame_data =~ /$end_of_block_re/g ) {
 		$eob = $+{end_of_block};
@@ -183,7 +189,7 @@ sub parse_frame_data {
 
 	state $checksum_re = qr/
 		\G
-		(?<checksum> [ 0-9 A-F ]{2})
+		(?<checksum> [0-9A-F]{2})
 	/xsa;
 	if( $frame_data =~ /$checksum_re/g ) {
 		my $got_checksum = $+{checksum};
