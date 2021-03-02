@@ -81,7 +81,6 @@ SKIP: {
 				mode => "9600,8,n,1",
 			);
 			$open_handle->($cconn);
-			$log->trace(Dumper($cconn));
 			my $csess = Session->new( connection => $cconn, session_system => SYSTEM_COMPUTER );
 
 			my $message_sent_f = $csess->send_message( $message );
@@ -97,7 +96,6 @@ SKIP: {
 				mode => "9600,8,n,1",
 			);
 			$open_handle->($iconn);
-			$log->trace(Dumper($iconn));
 			my $isess = Session->new( connection => $iconn, session_system => SYSTEM_INSTRUMENT );
 
 			$run_sm->($isess);
