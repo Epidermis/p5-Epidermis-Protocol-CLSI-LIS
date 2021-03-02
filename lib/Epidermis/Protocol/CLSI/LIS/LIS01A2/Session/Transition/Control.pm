@@ -46,7 +46,7 @@ lazy _buffer => sub {
 	my ($self) = @_;
 	my $buffer = Future::Buffer->new(
 		fill => async sub {
-			await $self->_recv_data( 1 );
+			my $data = await $self->_recv_data( 1 );
 		}
 	);
 };
