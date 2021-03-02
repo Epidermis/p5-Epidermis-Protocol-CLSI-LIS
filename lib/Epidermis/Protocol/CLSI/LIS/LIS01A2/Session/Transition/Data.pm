@@ -5,11 +5,14 @@ use Moo::Role;
 use Future::AsyncAwait;
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue;
+use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
 
 requires '_data_to_send_future';
 
 requires '_message_queue';
 requires '_frame_number';
+
+requires '_read_control';
 
 has _current_sendable_message => (
 	is => 'rw',
@@ -82,7 +85,10 @@ async sub event_on_good_frame {
 
 async sub event_on_get_frame {
 	# TODO
-	...
+	my ($self) = @_;
+	my $frame_data = await $self->_read_control;
+	use DDP; p $frame_data;
+	Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame->parse_frame_data( $frame_data );
 }
 
 async sub event_on_has_data_to_send {
