@@ -21,13 +21,13 @@ use Epidermis::Protocol::CLSI::LIS::Constants qw(
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_system);
 
-use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame';
+use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
 
 use constant END_OF_FRAME_RE => do {
 	my $re = join "|",
 		map {
 			my @ends = @$_;
-			Frame->_chars_to_hex_re( @ends )
+			Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame->_chars_to_hex_re( @ends )
 		} (
 			[ ENQ ],
 			[ EOT ],
