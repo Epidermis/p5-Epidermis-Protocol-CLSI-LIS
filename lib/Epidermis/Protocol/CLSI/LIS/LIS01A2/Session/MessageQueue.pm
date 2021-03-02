@@ -33,10 +33,10 @@ use MooX::Struct -retain,
 					start_frame_number => $self->initial_fn,
 				);
 			},
-			handles => { qw(
+			handles => [ qw(
 				frames
 				number_of_frames
-			) },
+			) ],
 		],
 
 		_frame_index => [ default => sub { 0 } ],
