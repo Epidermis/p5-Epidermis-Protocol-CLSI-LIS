@@ -11,7 +11,7 @@ use overload
 use Data::Dumper;
 use Data::Hexdumper ();
 
-use Types::Standard qw(ArrayRef InstanceOf HashRef Dict);
+use Types::Standard qw(ArrayRef InstanceOf);
 use boolean;
 
 use Future::AsyncAwait;
@@ -19,16 +19,13 @@ use Future::IO;
 
 use constant DEBUG => $ENV{EPIDERMIS_CLSI_DEBUG} // 0;
 
-our $MessageType = InstanceOf['Epidermis::Protocol::CLSI::LIS::LIS01A2::Message'];
+use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue;
 
 has _message_queue => (
 	is => 'ro',
 	default => sub { [] },
 	should => ArrayRef[
-		Dict[
-			message => $MessageType,
-			future  => InstanceOf['Future'],
-		]
+		$Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue::MessageQueueItem->TYPE_TINY
 	],
 	handles_via => 'Array',
 	handles => {
@@ -36,7 +33,7 @@ has _message_queue => (
 		_message_queue_size => 'count',
 		_message_queue_enqueue => 'push',
 		_message_queue_dequeue => 'shift',
-		_message_queue_peek => 'shift',
+		_message_queue_peek => [ 'get', 0 ],
 	},
 );
 
@@ -48,16 +45,17 @@ has _data_to_send_future => (
 
 sub send_message {
 	my ($self, $message) = @_;
-	$MessageType->assert_valid( $message );
 	my $empty = $self->_message_queue_is_empty;
-	my $f = Future->new;
-	$self->_message_queue_enqueue( { message => $message, future => $f } );
+	my $mq_item = $Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue::MessageQueueItem->new(
+		message => $message,
+	);
+	$self->_message_queue_enqueue( $mq_item );
 
 	if( $empty ) {
 		$self->_data_to_send_future->done
 	}
 
-	$f;
+	$mq_item->future;
 }
 
 sub _send_frame {
