@@ -30,7 +30,7 @@ use MooX::Struct -retain,
 				my ($self) = @_;
 				Epidermis::Protocol::CLSI::LIS::LIS01A2::Message->create_message(
 					$self->message_item->message->message_data,
-					start_frame_number => $self->initial_fn,
+					{ start_frame_number => $self->initial_fn },
 				);
 			},
 			handles => [ qw(
