@@ -23,12 +23,12 @@ has _retries => (
 
 ### ACTIONS
 
-sub do_reset_retry_count {
+async sub do_reset_retry_count {
 	my ($self) = @_;
 	$self->_retries(0);
 }
 
-sub do_increment_retry_count {
+async sub do_increment_retry_count {
 	my ($self) = @_;
 	$self->_retries( $self->_retries + 1 );
 }
