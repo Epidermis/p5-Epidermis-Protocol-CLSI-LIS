@@ -237,7 +237,6 @@ async sub event_on_receive_eot {
 
 async sub event_on_receive_eot_or_time_out {
 	my ($self) = @_;
-	# TODO
 	die unless
 		(await $self->_read_control) eq EOT
 		||
@@ -262,8 +261,15 @@ async sub event_on_receive_ack {
 
 async sub event_on_receive_nak_or_fail {
 	my ($self) = @_;
-	# TODO
-	die;
+	my $read = await $self->_read_control;
+
+	# Got a NAK
+	my $is_nak = $read eq NAK;
+
+	# Got any character other than ACK or EOT
+	my $is_fail = !( $read eq ACK || $read eq EOT );
+
+	die unless $is_nak || $is_fail;
 }
 
 async sub event_on_establishment_timers_running {
