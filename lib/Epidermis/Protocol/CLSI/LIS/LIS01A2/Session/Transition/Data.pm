@@ -40,8 +40,10 @@ sub _update_data_to_send_future {
 ### ACTIONS
 
 async sub do_send_frame {
-	# TODO
-	...
+	my ($self) = @_;
+	await $self->_send_data(
+		$self->_current_sendable_message->get_current_frame->frame_data
+	);
 }
 
 async sub do_setup_next_frame {
