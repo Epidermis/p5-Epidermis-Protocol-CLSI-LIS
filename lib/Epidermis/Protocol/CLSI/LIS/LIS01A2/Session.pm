@@ -70,7 +70,7 @@ sub _send_frame {
 
 async sub _recv_data {
 	my ($self, $len) = @_;
-	my $data = await Future::IO->sysread_exactly( $self->connection->handle, $len );
+	my $data = await Future::IO->sysread( $self->connection->handle, $len );
 	do {
 		$self->_logger->trace( "Received data <@{[ $self->session_system ]}>:\n"
 			. Data::Hexdumper::hexdump( data => $data, suppress_warnings => true ) )
