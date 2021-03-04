@@ -25,7 +25,9 @@ use Future::Utils qw(fmap_void repeat);
 use Data::Dumper;
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
-	qw(:enum_system);
+	qw(:enum_system :enum_state);
+
+use boolean;
 
 subtest "Test session" => sub {
 SKIP: {
@@ -52,7 +54,7 @@ SKIP: {
 		my $session = shift;
 		$log->trace("===> $session");
 
-		my $c_f = Future->new;
+		my $count_in_idle = 0;
 		my $r_f = repeat {
 			my $f = $session->step
 				->on_fail(sub {
@@ -61,10 +63,14 @@ SKIP: {
 				})->followed_by(sub {
 					my ($f1) = @_;
 					$log->trace("Then: $session");
+					$count_in_idle++ if $session->session_state eq STATE_N_IDLE;
+					$log->trace(" Idle count $session: $count_in_idle" );
 				})->else(sub {
 					Future->done;
 				});
-		} while => sub { $c_f };
+		} until => sub {
+			$count_in_idle == 1;
+		};
 
 		$r_f->await;
 	};
@@ -102,17 +108,7 @@ SKIP: {
 		}
 	);
 
-	push @session_f, $loop->run_process(
-		code => sub {
-			while( 1 ) {
-				sleep 2;
-				print STDERR ".\n";
-			}
-		}
-	);
-
 	$loop->await_all( @session_f );
-	$loop->run;
 
 	pass;
 }
