@@ -7,6 +7,8 @@ use Future::AsyncAwait;
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue;
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
 
+use boolean;
+
 requires '_data_to_send_future';
 
 requires '_message_queue';
@@ -27,14 +29,10 @@ after _reset_after_step => sub {
 
 sub _update_data_to_send_future {
 	my ($self) = @_;
-	if( $self->_data_to_send_future ) {
-		$self->_data_to_send_future->cancel;
-	}
-	if( $self->_message_queue_size ) {
-		$self->_data_to_send_future( Future->done )
-	} else {
-		$self->_data_to_send_future( Future->new )
-	}
+	# Treat these two futures as producer-consumer semaphores.
+	my $is_empty = $self->_message_queue_is_empty;
+	$self->_data_to_send_future( Future->new ) if $self->_data_to_send_future->is_ready;
+	$self->_message_queue_empty_future( Future->done( $is_empty ) );
 }
 
 ### ACTIONS
@@ -95,14 +93,22 @@ async sub event_on_get_frame {
 
 async sub event_on_has_data_to_send {
 	my ($self) = @_;
-	await $self->_data_to_send_future;
-	die unless $self->_data_to_send_future->is_done;
+	die unless await $self->_data_to_send_future;
 }
 
 async sub event_on_not_has_data_to_send {
 	my ($self) = @_;
-	await $self->_data_to_send_future;
-	die if $self->_data_to_send_future->is_done;
+	die if await $self->_data_to_send_future;
+}
+
+async sub event_on_transfer_done {
+	my ($self) = @_;
+	die unless await $self->_message_queue_empty_future;
+}
+
+async sub event_on_not_transfer_done {
+	my ($self) = @_;
+	die if await $self->_message_queue_empty_future;
 }
 
 async sub event_on_bad_frame {

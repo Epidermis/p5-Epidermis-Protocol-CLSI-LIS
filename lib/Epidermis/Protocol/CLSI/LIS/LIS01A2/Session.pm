@@ -43,6 +43,12 @@ has _data_to_send_future => (
 	default => sub { Future->new },
 );
 
+has _message_queue_empty_future => (
+	is => 'rw',
+	should => InstanceOf['Future'],
+	default => sub { Future->done(true) },
+);
+
 sub send_message {
 	my ($self, $message) = @_;
 	my $empty = $self->_message_queue_is_empty;
@@ -52,7 +58,7 @@ sub send_message {
 	$self->_message_queue_enqueue( $mq_item );
 
 	if( $empty ) {
-		$self->_data_to_send_future->done
+		$self->_data_to_send_future->done(true);
 	}
 
 	$mq_item->future;
