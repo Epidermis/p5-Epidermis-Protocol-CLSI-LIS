@@ -4,6 +4,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session;
 use Mu;
 use MooX::HandlesVia;
 use MooX::Should;
+use MooX::Role::Logger (); # declare dependency (role)
 
 use overload
 	'""' => \&TO_STRING;
