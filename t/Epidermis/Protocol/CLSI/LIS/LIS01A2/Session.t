@@ -78,8 +78,7 @@ SKIP: {
 
 	my @session_f;
 
-	$socat->pty0;
-	$socat->pty1;
+	$socat->start;
 
 	push @session_f, $loop->run_process(
 		code => sub {
