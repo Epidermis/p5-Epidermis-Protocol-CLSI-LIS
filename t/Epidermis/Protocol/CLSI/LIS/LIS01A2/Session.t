@@ -17,6 +17,7 @@ use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat';
 use Try::Tiny;
 
 use Log::Any::Adapter;
+use Log::Any::Adapter::Screen ();
 Log::Any::Adapter->set('Screen', min_level => 'trace' );
 
 use Log::Any qw($log);
