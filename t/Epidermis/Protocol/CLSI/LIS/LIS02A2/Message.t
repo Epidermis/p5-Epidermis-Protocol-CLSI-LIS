@@ -8,17 +8,13 @@ use StandardData;
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS02A2::Message';
 
 use XXX;
-use List::AllUtils qw(first);
 
 my $MessageWTree = Moo::Role->create_class_with_roles(
 	Message,
 	qw(Epidermis::Protocol::CLSI::LIS::LIS02A2::Message::Role::TreeDAG) );
 
 subtest "Test message creation from text" => sub {
-	my $text = StandardData->lis02a2_standard_data_text_to_message_text(
-		( first { $_->{id} eq 'fig7' } @{ StandardData->lis02a2_standard_data } )
-			->{text}
-	);
+	my $text = StandardData->get_message_text_by_id( 'fig7' );
 
 	subtest "Create message" => sub {
 		my $lis_msg;
