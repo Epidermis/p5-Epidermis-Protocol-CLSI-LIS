@@ -52,6 +52,7 @@ SKIP: {
 	};
 
 	my $run_sm = sub {
+		my $loop = shift;
 		my $session = shift;
 		$log->trace("===> $session");
 
@@ -73,7 +74,7 @@ SKIP: {
 			$count_in_idle == 1;
 		};
 
-		$r_f->await;
+		$loop->await_all( $r_f );
 	};
 
 	my @session_f;
@@ -91,7 +92,7 @@ SKIP: {
 
 			my $message_sent_f = $csess->send_message( $message );
 
-			$run_sm->($csess);
+			$run_sm->(IO::Async::Loop->new, $csess);
 		},
 	);
 
@@ -104,7 +105,7 @@ SKIP: {
 			$open_handle->($iconn);
 			my $isess = Session->new( connection => $iconn, session_system => SYSTEM_INSTRUMENT );
 
-			$run_sm->($isess);
+			$run_sm->(IO::Async::Loop->new, $isess);
 		}
 	);
 
