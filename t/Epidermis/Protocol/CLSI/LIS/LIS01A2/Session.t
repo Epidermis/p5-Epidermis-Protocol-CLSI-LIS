@@ -67,6 +67,7 @@ SKIP: {
 					$log->trace("Then: $session");
 					$count_in_idle++ if $session->session_state eq STATE_N_IDLE;
 					$log->trace(" Idle count $session: $count_in_idle" );
+					Future->done;
 				})->else(sub {
 					Future->done;
 				});

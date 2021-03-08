@@ -126,7 +126,7 @@ async sub step {
 			->set_label($action)
 	} @actions)->set_label( 'actions' );
 
-	await $actions_done->followed_by( sub { $self->_reset_after_step } );
+	await $actions_done->followed_by( sub { $self->_reset_after_step; Future->done } );
 }
 
 sub _reset_after_step { }
