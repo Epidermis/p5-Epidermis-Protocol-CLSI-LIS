@@ -256,9 +256,8 @@ async sub event_on_receive_eot_or_time_out {
 
 async sub event_on_receive_enq_or_nak {
 	my ($self) = @_;
-	die; # DEBUG
-	#my $read = await $self->_read_control;
-	#die unless $read eq ENQ || $read eq NAK;
+	my $read = await $self->_read_control;
+	die unless $read eq ENQ || $read eq NAK;
 }
 
 async sub event_on_receive_enq {
@@ -268,11 +267,7 @@ async sub event_on_receive_enq {
 
 async sub event_on_receive_ack {
 	my ($self) = @_;
-	my $read;
-	#$read = await $self->_read_control;
-	#$read = await $self->_recv_data(4096);
-	$read = ACK;
-	die unless $read eq ACK;
+	die unless (await $self->_read_control) eq ACK;
 }
 
 async sub event_on_receive_nak_or_fail {
