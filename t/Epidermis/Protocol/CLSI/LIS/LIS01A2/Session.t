@@ -78,35 +78,40 @@ SKIP: {
 		$loop->await_all( $r_f );
 	};
 
+	my $setup_system = sub {
+		my ( $device, $system, $message ) = @_;
+
+		my $session = Session->new(
+			connection => Connection::Serial->new(
+				device => $device,
+				mode => "9600,8,n,1",
+			),
+			session_system => $system,
+		);
+
+		$open_handle->( $session->connection );
+
+		my $message_sent_f;
+		if( $message ) {
+			$session->send_message( $message );
+		}
+
+		$run_sm->( IO::Async::Loop->new, $session );
+	},
+
 	my @session_f;
 
 	$socat->start;
 
 	push @session_f, $loop->run_process(
 		code => sub {
-			my $cconn = Connection::Serial->new(
-				device => $socat->pty0,
-				mode => "9600,8,n,1",
-			);
-			$open_handle->($cconn);
-			my $csess = Session->new( connection => $cconn, session_system => SYSTEM_COMPUTER );
-
-			my $message_sent_f = $csess->send_message( $message );
-
-			$run_sm->(IO::Async::Loop->new, $csess);
-		},
+			$setup_system->( $socat->pty0, SYSTEM_COMPUTER, $message );
+		}
 	);
 
 	push @session_f, $loop->run_process(
 		code => sub {
-			my $iconn = Connection::Serial->new(
-				device => $socat->pty1,
-				mode => "9600,8,n,1",
-			);
-			$open_handle->($iconn);
-			my $isess = Session->new( connection => $iconn, session_system => SYSTEM_INSTRUMENT );
-
-			$run_sm->(IO::Async::Loop->new, $isess);
+			$setup_system->( $socat->pty1, SYSTEM_INSTRUMENT, undef );
 		}
 	);
 
