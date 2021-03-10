@@ -62,8 +62,10 @@ has _read_control_future => (
 
 sub _read_control {
 	my ($self) = @_;
+	# Using without_cancel here because this future is shared amongst
+	# multiple events.
 	if( $self->_has_read_control_future ) {
-		return $self->_read_control_future
+		return $self->_read_control_future->without_cancel
 	}
 
 	my $f = $self->_buffer->read_until( END_OF_FRAME_RE )
@@ -78,13 +80,14 @@ sub _read_control {
 	}
 	$self->_read_control_future( $f );
 
-	$f;
+	$f->without_cancel;
 }
 
 after _reset_after_step => sub {
 	my ($self) = @_;
-	if( $self->_has_read_control_future ) {
-		$self->_read_control_future->cancel;
+	if( $self->_has_read_control_future
+		&& $self->_read_control_future->is_done ) {
+
 		$self->_clear_read_control_future;
 	}
 };
