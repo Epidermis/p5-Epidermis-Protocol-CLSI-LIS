@@ -31,4 +31,9 @@ constants => [
 	LIS01A2_MAX_RETRIES => 6,
 ];
 
+use Const::Exporter
+constants => [
+	LIS_DEBUG => $ENV{EPIDERMIS_PROTOCOL_CLSI_LIS_DEBUG} // 0,
+];
+
 1;

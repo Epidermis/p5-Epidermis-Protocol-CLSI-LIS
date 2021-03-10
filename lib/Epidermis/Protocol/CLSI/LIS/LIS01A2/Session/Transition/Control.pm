@@ -18,10 +18,13 @@ use Epidermis::Protocol::CLSI::LIS::Constants qw(
 
 	CR LF
 );
+use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS_DEBUG);
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_system);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
+
+use Data::Hexdumper ();
 
 use constant END_OF_FRAME_RE => do {
 	my $re = join "|",
@@ -64,15 +67,15 @@ sub _read_control {
 	}
 
 	my $f = $self->_buffer->read_until( END_OF_FRAME_RE )
-		->then(sub {
+		->set_label('read control');
+	if( LIS_DEBUG && $self->_logger->is_trace) {
+		$f = $f->then(sub {
 			my ($result) = @_;
-			use Data::Hexdumper ();
-			my $re = END_OF_FRAME_RE;
 			$self->_logger->trace( "Read control:\n"
 				. Data::Hexdumper::hexdump( data => $result, suppress_warnings => true ) );
 			Future->done( $result )
-		})
-		->set_label('read control');
+		});
+	}
 	$self->_read_control_future( $f );
 
 	$f;
