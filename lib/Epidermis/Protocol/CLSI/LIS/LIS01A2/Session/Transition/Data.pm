@@ -7,6 +7,9 @@ use Future::AsyncAwait;
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue;
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
 
+use Epidermis::Protocol::CLSI::LIS::Constants qw(
+	STX
+);
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_device);
 
@@ -92,9 +95,13 @@ async sub event_on_get_frame {
 	# TODO
 	my ($self) = @_;
 	my $frame_data = await $self->_read_control;
-	$self->_logger->trace("event_on_get_frame:\n"
-		. Data::Hexdumper::hexdump( data => $frame_data, suppress_warnings => true )); # DEBUG
-	my $frame = Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame->parse_frame_data( $frame_data );
+
+	# Check this early to return from event early.
+	die 'Invalid frame data: no STX' unless $frame_data =~ /\Q@{[ STX ]}\E/;
+
+	my $frame = eval {
+		Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame->parse_frame_data( $frame_data );
+	};
 	use Data::Dumper; $self->_logger->trace( Dumper($frame) ); # DEBUG
 
 	$frame;
