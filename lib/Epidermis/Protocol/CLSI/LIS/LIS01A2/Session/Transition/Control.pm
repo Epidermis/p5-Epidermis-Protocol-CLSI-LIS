@@ -18,10 +18,13 @@ use Epidermis::Protocol::CLSI::LIS::Constants qw(
 
 	CR LF
 );
+use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS_DEBUG);
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_system);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
+
+use Data::Hexdumper ();
 
 use constant END_OF_FRAME_RE => do {
 	my $re = join "|",
@@ -59,29 +62,32 @@ has _read_control_future => (
 
 sub _read_control {
 	my ($self) = @_;
+	# Using without_cancel here because this future is shared amongst
+	# multiple events.
 	if( $self->_has_read_control_future ) {
-		return $self->_read_control_future
+		return $self->_read_control_future->without_cancel
 	}
 
 	my $f = $self->_buffer->read_until( END_OF_FRAME_RE )
-		->then(sub {
+		->set_label('read control');
+	if( LIS_DEBUG && $self->_logger->is_trace) {
+		$f = $f->then(sub {
 			my ($result) = @_;
-			use Data::Hexdumper ();
-			my $re = END_OF_FRAME_RE;
 			$self->_logger->trace( "Read control:\n"
 				. Data::Hexdumper::hexdump( data => $result, suppress_warnings => true ) );
 			Future->done( $result )
-		})
-		->set_label('read control');
+		});
+	}
 	$self->_read_control_future( $f );
 
-	$f;
+	$f->without_cancel;
 }
 
 after _reset_after_step => sub {
 	my ($self) = @_;
-	if( $self->_has_read_control_future ) {
-		$self->_read_control_future->cancel;
+	if( $self->_has_read_control_future
+		&& $self->_read_control_future->is_done ) {
+
 		$self->_clear_read_control_future;
 	}
 };
@@ -253,9 +259,8 @@ async sub event_on_receive_eot_or_time_out {
 
 async sub event_on_receive_enq_or_nak {
 	my ($self) = @_;
-	die; # DEBUG
-	#my $read = await $self->_read_control;
-	#die unless $read eq ENQ || $read eq NAK;
+	my $read = await $self->_read_control;
+	die unless $read eq ENQ || $read eq NAK;
 }
 
 async sub event_on_receive_enq {
@@ -265,11 +270,7 @@ async sub event_on_receive_enq {
 
 async sub event_on_receive_ack {
 	my ($self) = @_;
-	my $read;
-	#$read = await $self->_read_control;
-	#$read = await $self->_recv_data(4096);
-	$read = ACK;
-	die unless $read eq ACK;
+	die unless (await $self->_read_control) eq ACK;
 }
 
 async sub event_on_receive_nak_or_fail {

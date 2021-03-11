@@ -1,10 +1,13 @@
 #!/usr/bin/env perl
 
-use Test::Most tests => 1;
+use Test::Most tests => 2;
 
 use lib 't/lib';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::StateMachine';
+use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
+	qw(:enum_state :enum_event :enum_action);
 use IPC::Run qw(run);
+use List::AllUtils;
 
 sub render_plantuml_to_text {
 	my ($plantuml) = @_;
@@ -39,8 +42,50 @@ sub show_plantuml {
 
 subtest "Create state machine" => sub {
 	my $sm = StateMachine->new;
+	ok( $sm );
+};
 
-	pass;
+subtest "Check state machine transitions: actions" => sub {
+	my $sm = StateMachine->new;
+
+	my $actions_for_to = sub {
+		my ($to) = @_;
+		my @actions;
+
+		my $map = $sm->_state_map;
+		for my $from (keys %$map ) {
+			next unless exists $map->{$from}{$to};
+			push @actions, $map->{$from}{$to}{action};
+		}
+		\@actions;
+	};
+
+	my $all_to_state_have_action = sub {
+		my ($to_state, $action) = @_;
+
+		my $all_actions_for_to = $actions_for_to->( $to_state );
+
+		return List::AllUtils::all {
+			my $action_list = $_;
+			List::AllUtils::any { $_ eq $action } @$action_list
+		} @$all_actions_for_to
+	};
+
+	subtest "Device = neutral" => sub {
+		ok $all_to_state_have_action->( STATE_N_IDLE, ACTION_SET_DEVICE_TO_NEUTRAL );
+	};
+
+	subtest "Device = sender" => sub {
+		ok $all_to_state_have_action->( STATE_S_ESTABLISH_SEND_DATA, ACTION_SET_DEVICE_TO_SENDER );
+	};
+
+	subtest "Device = receiver" => sub {
+		ok $all_to_state_have_action->( STATE_R_AWAKE, ACTION_SET_DEVICE_TO_RECEIVER );
+	};
+
+	subtest "Setup new frame" => sub {
+		ok $all_to_state_have_action->( STATE_S_TRANSFER_SETUP_NEXT_FRAME, ACTION_SETUP_NEXT_FRAME );
+	};
 };
 
 done_testing;

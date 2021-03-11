@@ -18,7 +18,7 @@ use boolean;
 use Future::AsyncAwait;
 use Future::IO;
 
-use constant DEBUG => $ENV{EPIDERMIS_CLSI_DEBUG} // 0;
+use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS_DEBUG);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue;
 
@@ -75,7 +75,7 @@ async sub _recv_data {
 	do {
 		$self->_logger->trace( "Received data <@{[ $self->session_system ]}>:\n"
 			. Data::Hexdumper::hexdump( data => $data, suppress_warnings => true ) )
-	} if DEBUG && $self->_logger->is_trace;
+	} if LIS_DEBUG && $self->_logger->is_trace;
 	return $data;
 }
 
@@ -84,7 +84,7 @@ async sub _send_data {
 	do {
 		$self->_logger->trace( "Sending data <@{[ $self->session_system ]}>:\n"
 			. Data::Hexdumper::hexdump( data => $data, suppress_warnings => true ) )
-	} if DEBUG && $self->_logger->is_trace;
+	} if LIS_DEBUG && $self->_logger->is_trace;
 	await Future::IO->syswrite_exactly( $self->connection->handle , $data );
 }
 
@@ -126,7 +126,7 @@ async sub step {
 			->set_label($action)
 	} @actions)->set_label( 'actions' );
 
-	await $actions_done->followed_by( sub { $self->_reset_after_step } );
+	await $actions_done->followed_by( sub { $self->_reset_after_step; Future->done } );
 }
 
 sub _reset_after_step { }
