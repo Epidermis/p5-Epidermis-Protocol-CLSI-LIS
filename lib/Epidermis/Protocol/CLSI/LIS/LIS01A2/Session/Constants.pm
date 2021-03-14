@@ -155,4 +155,15 @@ enum_state => [
 ],
 );
 
+## Timer durations in seconds as specified in standard
+Const::Exporter->import(
+timer => [
+	TIMER_DURATION_SENDER => 15,
+	TIMER_DURATION_RECEIVER => 30,
+	TIMER_DURATION_CONTENTION_INSTRUMENT => 1,
+	TIMER_DURATION_CONTENTION_COMPUTER => 20,
+	TIMER_DURATION_BUSY => 10,
+]
+);
+
 1;
