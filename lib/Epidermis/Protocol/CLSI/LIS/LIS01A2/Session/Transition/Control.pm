@@ -137,14 +137,14 @@ has _busy_future => (
 sub _status_busy {
 	my ($self) = @_;
 	if( $self->_has_busy_future ) {
-		return $self->_busy_future;
+		return $self->_busy_future->without_cancel;
 	}
 
 	my $f = $self->busy_cb->()
 		->set_label('busy_cb');
 	$self->_busy_future( $f );
 
-	$f;
+	$f->without_cancel;
 }
 
 after _reset_after_step => sub {
@@ -174,14 +174,14 @@ has _interrupt_future => (
 sub _status_interrupt {
 	my ($self) = @_;
 	if( $self->_has_interrupt_future ) {
-		return $self->_interrupt_future;
+		return $self->_interrupt_future->without_cancel;
 	}
 
 	my $f = $self->interrupt_cb->()
 		->set_label('interrupt_cb');
 	$self->_interrupt_future( $f );
 
-	$f;
+	$f->without_cancel;
 }
 
 ### ACTIONS
