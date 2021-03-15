@@ -94,7 +94,6 @@ after _reset_after_step => sub {
 
 async sub do_send_frame {
 	my ($self) = @_;
-	return unless $self->_has_current_sendable_message; # DEBUG
 	await $self->_send_data(
 		$self->_current_sendable_message->get_current_frame->frame_data
 	);
@@ -163,16 +162,19 @@ async sub event_on_get_frame {
 	$self->_current_receivable_message->set_current_frame_data( $frame_data );
 }
 
-async sub event_on_has_data_to_send {
+async sub event_on_has_data_to_send_sender {
 	my ($self) = @_;
-	die if $self->device_type eq DEVICE_RECEIVER; # debug
 	die unless await $self->_data_to_send_future;
 }
 
-async sub event_on_not_has_data_to_send {
+async sub event_on_has_data_to_send_receiver {
 	my ($self) = @_;
-	return true if $self->device_type eq DEVICE_RECEIVER; # debug
-	die if await $self->_data_to_send_future;
+	die if $self->_message_queue_is_empty;
+}
+
+async sub event_on_not_has_data_to_send_receiver {
+	my ($self) = @_;
+	die unless $self->_message_queue_is_empty;
 }
 
 async sub event_on_transfer_done {
