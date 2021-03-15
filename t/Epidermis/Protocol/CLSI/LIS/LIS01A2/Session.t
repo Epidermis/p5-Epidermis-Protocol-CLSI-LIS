@@ -67,6 +67,12 @@ SKIP: {
 					$log->trace( "Failed: " . Dumper($f1) );
 				})->followed_by(sub {
 					my ($f1) = @_;
+					$log->trace( "Step: " . do {
+						local $Data::Dumper::Terse = 1;
+						local $Data::Dumper::Indent = 0;
+						local $Data::Dumper::Sortkeys = 1;
+						Dumper($f1->get)
+					} );
 					$log->trace("Then: $session");
 					$count_in_idle++ if $session->session_state eq STATE_N_IDLE;
 					$log->trace(" Idle count $session: $count_in_idle" );
