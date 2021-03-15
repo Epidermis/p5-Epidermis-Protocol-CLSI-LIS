@@ -35,14 +35,19 @@ async sub do_increment_retry_count {
 
 ### EVENTS
 
-async sub event_on_can_retry {
+sub _can_retry {
 	my ($self) = @_;
 	$self->_retries < $self->max_retries;
 }
 
+async sub event_on_can_retry {
+	my ($self) = @_;
+	die unless $self->_can_retry;
+}
+
 async sub event_on_no_can_retry {
 	my ($self) = @_;
-	! $self->event_on_no_can_retry;
+	die if $self->_can_retry;
 }
 
 1;
