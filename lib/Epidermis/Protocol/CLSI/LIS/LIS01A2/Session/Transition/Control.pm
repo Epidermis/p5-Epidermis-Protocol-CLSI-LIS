@@ -20,7 +20,7 @@ use Epidermis::Protocol::CLSI::LIS::Constants qw(
 );
 use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS_DEBUG);
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
-	qw(:enum_system);
+	qw(:enum_system :timer);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
 
@@ -137,14 +137,14 @@ has _busy_future => (
 sub _status_busy {
 	my ($self) = @_;
 	if( $self->_has_busy_future ) {
-		return $self->_busy_future;
+		return $self->_busy_future->without_cancel;
 	}
 
 	my $f = $self->busy_cb->()
 		->set_label('busy_cb');
 	$self->_busy_future( $f );
 
-	$f;
+	$f->without_cancel;
 }
 
 after _reset_after_step => sub {
@@ -174,14 +174,14 @@ has _interrupt_future => (
 sub _status_interrupt {
 	my ($self) = @_;
 	if( $self->_has_interrupt_future ) {
-		return $self->_interrupt_future;
+		return $self->_interrupt_future->without_cancel;
 	}
 
 	my $f = $self->interrupt_cb->()
 		->set_label('interrupt_cb');
 	$self->_interrupt_future( $f );
 
-	$f;
+	$f->without_cancel;
 }
 
 ### ACTIONS
@@ -206,7 +206,7 @@ async sub do_reset_receiver_timer {
 	my ($self) = @_;
 	$self->_timer( {
 		type => 'receiver',
-		future => Future::IO->sleep(30)->set_label('receiver timer')
+		future => Future::IO->sleep(TIMER_DURATION_RECEIVER)->set_label('receiver timer')
 	} );
 }
 
@@ -214,7 +214,7 @@ async sub do_reset_sender_timer {
 	my ($self) = @_;
 	$self->_timer( {
 		type => 'sender',
-		future => Future::IO->sleep(15)->set_label('sender timer')
+		future => Future::IO->sleep(TIMER_DURATION_SENDER)->set_label('sender timer')
 	} );
 }
 
@@ -225,14 +225,14 @@ async sub do_reset_contention_busy_timer {
 			type => 'contention',
 			future => Future::IO->sleep(
 					$self->session_system eq SYSTEM_INSTRUMENT
-					? 1
-					: 20
+					? TIMER_DURATION_CONTENTION_INSTRUMENT
+					: TIMER_DURATION_CONTENTION_COMPUTER
 				)->set_label('contention timer')
 		} );
 	} else {
 		$self->_timer( {
 			type => 'busy',
-			future => Future::IO->sleep(10)
+			future => Future::IO->sleep(TIMER_DURATION_BUSY)
 				->set_label('busy timer')
 		} );
 	}

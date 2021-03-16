@@ -2,10 +2,11 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue;
 # ABSTRACT: Classes to help manage session message queue
 
 use Modern::Perl;
-use Types::Standard qw(InstanceOf);
+use Types::Standard qw(InstanceOf Str);
 use Epidermis::Protocol::CLSI::LIS::Types qw(FrameNumber);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Message;
+use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
 
 use MooX::Struct -retain,
 	MessageQueueItem => [
@@ -58,5 +59,40 @@ use MooX::Struct -retain,
 	];
 our $SendableMessage = SendableMessage;
 
+use MooX::Struct -retain,
+	ReceivableMessage => [
+		initial_fn => [ isa => FrameNumber, required => 1 ],
+		message => [
+			isa => InstanceOf['Epidermis::Protocol::CLSI::LIS::LIS01A2::Message'],
+			lazy => 1, default => sub {
+				my ($self) = @_;
+				Epidermis::Protocol::CLSI::LIS::LIS01A2::Message->new(
+					start_frame_number => $self->initial_fn,
+				);
+			},
+		],
+		_current_frame_data => [
+			is => 'rw',
+			isa => Str,
+		],
+		_current_frame => [
+			is => 'rw',
+			isa => InstanceOf['Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame'],
+		],
+
+		set_current_frame_data => sub {
+			my ($self, $frame_data ) = @_;
+
+			$self->_current_frame_data( $frame_data );
+		},
+
+		process_current_frame_data => sub {
+			my ($self) = @_;
+
+			my $frame = Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame->parse_frame_data( $self->_current_frame_data );
+			$self->message->add_frame( $frame );
+		},
+	];
+our $ReceivableMessage = ReceivableMessage;
 
 1;

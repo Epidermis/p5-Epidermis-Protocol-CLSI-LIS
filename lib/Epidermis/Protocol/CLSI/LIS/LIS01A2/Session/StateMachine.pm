@@ -75,7 +75,7 @@ sub BUILD {
 	my $unlock_state_map = unlock( $self->_state_map );
 
 	# Neutral Device
-	$self->_t( from => STATE_N_IDLE, to => STATE_S_ESTABLISH_SEND_DATA, event => EV_HAS_DATA_TO_SEND, action => ACTION_SET_DEVICE_TO_SENDER  );
+	$self->_t( from => STATE_N_IDLE, to => STATE_S_ESTABLISH_SEND_DATA, event => EV_HAS_DATA_TO_SEND_SENDER, action => ACTION_SET_DEVICE_TO_SENDER  );
 	$self->_t( from => STATE_N_IDLE, to => STATE_R_AWAKE, event => EV_RECEIVE_ENQ, action => ACTION_SET_DEVICE_TO_RECEIVER );
 
 	# Receiver Device
@@ -88,8 +88,8 @@ sub BUILD {
 	$self->_t( from => STATE_R_FRAME_RECEIVED, to => STATE_R_GOOD_FRAME, event => EV_GOOD_FRAME, action => ACTION_NOP );
 	$self->_t( from => STATE_R_FRAME_RECEIVED, to => STATE_R_WAITING, event => EV_BAD_FRAME, action => [ ACTION_RESET_RECEIVER_TIMER, ACTION_SEND_NAK ] );
 
-	$self->_t( from => STATE_R_GOOD_FRAME, to => STATE_R_WAITING, event => EV_NOT_HAS_DATA_TO_SEND, action => [ ACTION_INCREMENT_FN, ACTION_RESET_RECEIVER_TIMER, ACTION_SEND_ACK ] );
-	$self->_t( from => STATE_R_GOOD_FRAME, to => STATE_R_SEND_DATA, event => EV_HAS_DATA_TO_SEND, action => ACTION_NOP );
+	$self->_t( from => STATE_R_GOOD_FRAME, to => STATE_R_WAITING, event => EV_NOT_HAS_DATA_TO_SEND_RECEIVER, action => [ ACTION_INCREMENT_FN, ACTION_RESET_RECEIVER_TIMER, ACTION_SEND_ACK ] );
+	$self->_t( from => STATE_R_GOOD_FRAME, to => STATE_R_SEND_DATA, event => EV_HAS_DATA_TO_SEND_RECEIVER, action => ACTION_NOP );
 
 	$self->_t( from => STATE_R_SEND_DATA, to => STATE_R_WAITING, event => EV_ANY, action => [ ACTION_INCREMENT_FN, ACTION_RESET_RECEIVER_TIMER, ACTION_SEND_EOT ] );
 

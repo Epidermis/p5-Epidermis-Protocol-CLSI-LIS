@@ -14,6 +14,8 @@ use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Mess
 use aliased 'Epidermis::Lab::Connection::Serial' => 'Connection::Serial';
 
 use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat';
+use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat::Role::WithChild';
+use Moo::Role ();
 use Try::Tiny;
 
 use Log::Any::Adapter;
@@ -33,7 +35,8 @@ use boolean;
 subtest "Test session" => sub {
 SKIP: {
 	my $socat = try {
-		Socat->new( message_level => 0, socat_opts => [ qw(-x -v) ]  );
+		Moo::Role->create_class_with_roles(Socat, WithChild)
+			->new( message_level => 0, socat_opts => [ qw(-x -v) ]  );
 	} catch {
 		skip $_;
 	};
@@ -64,6 +67,12 @@ SKIP: {
 					$log->trace( "Failed: " . Dumper($f1) );
 				})->followed_by(sub {
 					my ($f1) = @_;
+					$log->trace( "Step: " . do {
+						local $Data::Dumper::Terse = 1;
+						local $Data::Dumper::Indent = 0;
+						local $Data::Dumper::Sortkeys = 1;
+						Dumper($f1->get)
+					} );
 					$log->trace("Then: $session");
 					$count_in_idle++ if $session->session_state eq STATE_N_IDLE;
 					$log->trace(" Idle count $session: $count_in_idle" );
@@ -101,7 +110,7 @@ SKIP: {
 
 	my @session_f;
 
-	$socat->start;
+	$socat->start_via_child;
 
 	push @session_f, $loop->run_process(
 		code => sub {

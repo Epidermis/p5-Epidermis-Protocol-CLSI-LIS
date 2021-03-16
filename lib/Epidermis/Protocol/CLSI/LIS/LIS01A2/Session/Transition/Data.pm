@@ -10,6 +10,7 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
 use Epidermis::Protocol::CLSI::LIS::Constants qw(
 	STX
 );
+use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS_DEBUG);
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_device);
 
@@ -28,6 +29,12 @@ has _current_sendable_message => (
 	clearer => 1,
 );
 
+has _current_receivable_message => (
+	is => 'rw',
+	predicate => 1,
+	clearer => 1,
+);
+
 after _reset_after_step => sub {
 	my ($self) = @_;
 	$self->_update_data_to_send_future;
@@ -41,11 +48,52 @@ sub _update_data_to_send_future {
 	$self->_message_queue_empty_future( Future->done( $is_empty ) );
 }
 
+has _process_frame_data_future => (
+	is => 'rw',
+	predicate => 1,
+	clearer => 1,
+);
+
+sub _process_frame_data {
+	my ($self) = @_;
+	if( $self->_has_process_frame_data_future ) {
+		return $self->_process_frame_data_future->without_cancel;
+	}
+
+	my $f = Future->done( eval {
+			$self->_current_receivable_message->process_current_frame_data;
+			{ is_good_frame => true };
+		} or { is_good_frame => false, error => $@ })
+		->set_label('process frame data');
+	if( LIS_DEBUG && $self->_logger->is_trace) {
+		$f = $f->then(sub {
+			my ($result) = @_;
+			$self->_logger->trace( "Processing frame data: "
+				.  ( $result->{is_good_frame}
+					? "Good frame"
+					: "Bad frame; Error: $result->{error}" )
+			);
+			Future->done( $result )
+		});
+	}
+	$self->_process_frame_data_future( $f );
+
+	$f->without_cancel;
+}
+
+after _reset_after_step => sub {
+	my ($self) = @_;
+	if( $self->_has_process_frame_data_future
+		&& $self->_process_frame_data_future->is_done ) {
+
+		$self->_clear_process_frame_data_future;
+	}
+};
+
 ### ACTIONS
 
 async sub do_send_frame {
 	my ($self) = @_;
-	return unless $self->_has_current_sendable_message; # DEBUG
 	await $self->_send_data(
 		$self->_current_sendable_message->get_current_frame->frame_data
 	);
@@ -87,36 +135,46 @@ async sub do_setup_old_frame {
 ### EVENTS
 
 async sub event_on_good_frame {
-	# TODO
-	true; # DEBUG
+	my ($self) = @_;
+	die unless (await $self->_process_frame_data)->{is_good_frame};
+}
+
+async sub event_on_bad_frame {
+	my ($self) = @_;
+	die if (await $self->_process_frame_data)->{is_good_frame};
 }
 
 async sub event_on_get_frame {
-	# TODO
 	my ($self) = @_;
 	my $frame_data = await $self->_read_control;
 
 	# Check this early to return from event early.
 	die 'Invalid frame data: no STX' unless $frame_data =~ /\Q@{[ STX ]}\E/;
 
-	my $frame = eval {
-		Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame->parse_frame_data( $frame_data );
-	};
-	use Data::Dumper; $self->_logger->trace( Dumper($frame) ); # DEBUG
+	if( ! $self->_has_current_receivable_message ) {
+		$self->_current_receivable_message(
+			$Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue::ReceivableMessage->new(
+					initial_fn => $self->_frame_number,
+			)
+		);
+	}
 
-	$frame;
+	$self->_current_receivable_message->set_current_frame_data( $frame_data );
 }
 
-async sub event_on_has_data_to_send {
+async sub event_on_has_data_to_send_sender {
 	my ($self) = @_;
-	die if $self->device_type eq DEVICE_RECEIVER; # debug
 	die unless await $self->_data_to_send_future;
 }
 
-async sub event_on_not_has_data_to_send {
+async sub event_on_has_data_to_send_receiver {
 	my ($self) = @_;
-	return true if $self->device_type eq DEVICE_RECEIVER; # debug
-	die if await $self->_data_to_send_future;
+	die if $self->_message_queue_is_empty;
+}
+
+async sub event_on_not_has_data_to_send_receiver {
+	my ($self) = @_;
+	die unless $self->_message_queue_is_empty;
 }
 
 async sub event_on_transfer_done {
@@ -127,11 +185,6 @@ async sub event_on_transfer_done {
 async sub event_on_not_transfer_done {
 	my ($self) = @_;
 	die if await $self->_message_queue_empty_future;
-}
-
-async sub event_on_bad_frame {
-	# TODO
-	...
 }
 
 1;
