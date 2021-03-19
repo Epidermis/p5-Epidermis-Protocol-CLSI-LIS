@@ -20,7 +20,6 @@ use Try::Tiny;
 
 use Log::Any::Adapter;
 use Log::Any::Adapter::Screen ();
-Log::Any::Adapter->set('Screen', min_level => 'trace' );
 
 use Log::Any qw($log);
 
@@ -36,10 +35,19 @@ subtest "Test session" => sub {
 SKIP: {
 	my $socat = try {
 		Moo::Role->create_class_with_roles(Socat, WithChild)
-			->new( message_level => 0, socat_opts => [ qw(-x -v) ]  );
+			->new(
+				$ENV{TEST_VERBOSE}
+				? ( message_level => 0, socat_opts => [ qw(-x -v) ] )
+				: ()
+			);
 	} catch {
 		skip $_;
 	};
+
+	Log::Any::Adapter->set( {
+		lexically => \my $lex,
+		category => qr/^Epidermis::Protocol::CLSI::LIS::LIS01A2::Session/ },
+		'Screen', min_level => 'trace' ) if $ENV{TEST_VERBOSE};
 
 	my $message = LIS01A2::Message->create_message('Hello, world!');
 
