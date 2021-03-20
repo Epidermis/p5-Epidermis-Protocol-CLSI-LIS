@@ -47,7 +47,7 @@ SKIP: {
 	Log::Any::Adapter->set( {
 		lexically => \my $lex,
 		category => qr/^Epidermis::Protocol::CLSI::LIS::LIS01A2::Session/ },
-		'Screen', min_level => 'trace' ) if $ENV{TEST_VERBOSE};
+		'Screen', min_level => 'trace', formatter => sub { $_[1] =~ s/^/  # LOG: /mgr } ) if $ENV{TEST_VERBOSE};
 
 	my $message = LIS01A2::Message->create_message('Hello, world!');
 
