@@ -1,4 +1,5 @@
 package Epidermis::Protocol::CLSI::LIS::Constants;
+# ABSTRACT: Constants for protocol
 
 use Modern::Perl;
 
