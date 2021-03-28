@@ -140,19 +140,6 @@ sub TO_STRING {
 	"Session: [ @{[ $self->STATE_TO_STRING ]}, @{[ $self->CONTEXT_TO_STRING ]} ]"
 }
 
-async sub _counter {
-	my ($self) = @_;
-	my $counter = 0;
-	while( 1 ) {
-		await Future::IO->sleep(1);
-		await Future::IO->syswrite(
-			\*STDERR,
-			sprintf( "System: [%s] counter: %d\n", $self->session_system,  ++$counter)
-		);
-	}
-	return 0;
-}
-
 with qw(
 	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::Context
 	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::StateMachine
