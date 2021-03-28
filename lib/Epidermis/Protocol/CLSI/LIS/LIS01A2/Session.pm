@@ -64,10 +64,6 @@ sub send_message {
 	$mq_item->future;
 }
 
-sub _send_frame {
-	...
-}
-
 async sub _recv_data {
 	my ($self, $len) = @_;
 	my $data = await Future::IO->sysread( $self->connection->handle, $len );
