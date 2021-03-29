@@ -7,8 +7,6 @@ use StandardData;
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS02A2::Message';
 
-use XXX;
-
 my $MessageWTree = Moo::Role->create_class_with_roles(
 	Message,
 	qw(Epidermis::Protocol::CLSI::LIS::LIS02A2::Message::Role::TreeDAG) );
