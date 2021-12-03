@@ -73,7 +73,7 @@ sub _read_control {
 	if( LIS_DEBUG && $self->_logger->is_trace) {
 		$f = $f->then(sub {
 			my ($result) = @_;
-			$self->_logger->trace( "Read control:\n"
+			$self->_logger->trace( $self->_logger_name_prefix . "Read control:\n"
 				. Data::Hexdumper::hexdump( data => $result, suppress_warnings => true ) );
 			Future->done( $result )
 		});

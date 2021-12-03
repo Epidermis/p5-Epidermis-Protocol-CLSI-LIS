@@ -68,7 +68,7 @@ sub _process_frame_data {
 	if( LIS_DEBUG && $self->_logger->is_trace) {
 		$f = $f->then(sub {
 			my ($result) = @_;
-			$self->_logger->trace( "Processing frame data: "
+			$self->_logger->trace( $self->_logger_name_prefix . "Processing frame data: "
 				.  ( $result->{is_good_frame}
 					? "Good frame"
 					: "Bad frame; Error: $result->{error}" )
@@ -112,7 +112,7 @@ async sub do_setup_next_frame {
 
 	if( $create_new_sendable_message ) {
 		if( $self->_message_queue_size ) {
-			$self->_logger->trace( 'Creating new sendable message' );
+			$self->_logger->trace( $self->_logger_name_prefix . 'Creating new sendable message' );
 			$self->_current_sendable_message(
 				$Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue::SendableMessage->new(
 					message_item => $self->_message_queue_peek,
@@ -120,7 +120,7 @@ async sub do_setup_next_frame {
 				)
 			);
 		} else {
-			$self->_logger->trace( 'Message queue empty' );
+			$self->_logger->trace( $self->_logger_name_prefix . 'Message queue empty' );
 			$self->_clear_current_sendable_message;
 		}
 	} else {

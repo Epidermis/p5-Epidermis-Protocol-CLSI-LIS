@@ -38,7 +38,7 @@ async sub step {
 	do {
 		local $Data::Dumper::Terse = 1;
 		local $Data::Dumper::Indent = 0;
-		$self->_logger->debug( "State @{[ $self->session_state ]}: Events " . Dumper([ sort { $a cmp $b } @$events ]) )
+		$self->_logger->debug( $self->_logger_name_prefix . "State @{[ $self->session_state ]}: Events " . Dumper([ sort { $a cmp $b } @$events ]) )
 	} if $self->_logger->is_debug;
 	my @events_cb = @{ $self->_event_dispatch_table }{ @$events };
 
@@ -56,7 +56,7 @@ async sub step {
 	);
 
 	do {
-		$self->_logger->debug( "Transition: [ @{[ $from ]} ] -- @{[ $transition_event ]} --> [ @{[ $transition_data->{to} ]} ]" )
+		$self->_logger->debug( $self->_logger_name_prefix . "Transition: [ @{[ $from ]} ] -- @{[ $transition_event ]} --> [ @{[ $transition_data->{to} ]} ]" )
 	} if $self->_logger->is_debug;
 
 	$self->session_state( $transition_data->{to} );
