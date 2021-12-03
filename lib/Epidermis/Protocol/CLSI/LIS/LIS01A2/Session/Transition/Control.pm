@@ -111,16 +111,7 @@ has _timer => (
 
 async sub time_out {
 	my ($self) = @_;
-	my $future = $self->_timer->future;
-
-	my $timed_out;
-	await $future->on_cancel(sub {
-		$timed_out = 0;
-	})->on_done(sub {
-		$timed_out = 1;
-	});
-
-	return $timed_out;
+	await $self->_timer->timed_out;
 };
 
 #### Busy status

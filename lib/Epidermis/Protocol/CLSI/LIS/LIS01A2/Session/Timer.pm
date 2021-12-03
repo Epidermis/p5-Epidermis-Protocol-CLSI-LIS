@@ -3,6 +3,8 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Timer;
 
 use Mu;
 use Types::Standard qw(Str InstanceOf);
+use Future::AsyncAwait;
+use boolean;
 
 =attr type
 
@@ -24,5 +26,18 @@ Represents the timer.
 ro 'future' => (
 	isa => InstanceOf['Future'],
 );
+
+async sub timed_out {
+	my ($self) = @_;
+
+	my $timed_out;
+	await $self->future->on_cancel(sub {
+		$timed_out = false;
+	})->on_done(sub {
+		$timed_out = true;
+	});
+
+	return $timed_out;
+}
 
 1;
