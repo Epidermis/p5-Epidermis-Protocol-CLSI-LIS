@@ -104,6 +104,7 @@ SKIP: {
 				mode => "9600,8,n,1",
 			),
 			session_system => $system,
+			name => substr($system, 0, 1),
 		);
 
 		$open_handle->( $session->connection );
