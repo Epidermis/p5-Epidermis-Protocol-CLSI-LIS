@@ -46,7 +46,7 @@ SKIP: {
 
 	Log::Any::Adapter->set( {
 		lexically => \my $lex,
-		category => qr/^Epidermis::Protocol::CLSI::LIS::LIS01A2::Session/ },
+		category => qr/^main$|^Epidermis::Protocol::CLSI::LIS::LIS01A2::Session/ },
 		'Screen', min_level => 'trace', formatter => sub { $_[1] =~ s/^/  # LOG: /mgr } ) if $ENV{TEST_VERBOSE};
 
 	my $message = LIS01A2::Message->create_message('Hello, world!');
@@ -68,6 +68,7 @@ SKIP: {
 		$log->trace("===> $session");
 
 		my $count_in_idle = 0;
+		my $step_count = 0;
 		my $r_f = repeat {
 			my $f = $session->step
 				->on_fail(sub {
@@ -75,10 +76,16 @@ SKIP: {
 					$log->trace( "Failed: " . Dumper($f1) );
 				})->followed_by(sub {
 					my ($f1) = @_;
-					$log->trace( "Step: " .  $f1->get );
-					$log->trace("Then: $session");
 					$count_in_idle++ if $session->session_state eq STATE_N_IDLE;
-					$log->trace(" Idle count $session: $count_in_idle" );
+					++$step_count;
+					$log->tracef(
+						"[%s] Step %d (I:%d): %s :: %s",
+						$session->name,
+						$step_count,
+						$count_in_idle,
+						$f1->get,
+						$session,
+					);
 					Future->done;
 				})->else(sub {
 					Future->done;
