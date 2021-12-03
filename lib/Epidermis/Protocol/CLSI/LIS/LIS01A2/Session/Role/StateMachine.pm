@@ -15,6 +15,14 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 
 use Future::AsyncAwait;
 
+use MooX::Struct StateTransition => [
+	qw( from transition to ),
+	TO_STRING => sub {
+		my ($self) = @_;
+		"[ @{[ $self->from ]} ] -- @{[ $self->transition ]} --> [ @{[ $self->to ]} ]"
+	}
+];
+
 has state_machine => (
 	is => 'ro',
 	default => sub { StateMachine->new; },
@@ -70,11 +78,11 @@ async sub step {
 
 	await $actions_done->followed_by( sub { $self->_reset_after_step; Future->done } );
 
-	return {
-		from => $from,
-		transition => $transition_event,
-		to => $transition_data->{to}
-	};
+	return StateTransition[
+		$from,
+		$transition_event,
+		$transition_data->{to}
+	];
 }
 
 sub _reset_after_step { }
