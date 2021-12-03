@@ -304,8 +304,8 @@ async sub event_on_interrupt_accept_or_time_out {
 
 async sub event_on_timed_out {
 	my ($self) = @_;
-	die; # DEBUG
-	#die unless $self->_timer->future->is_done;
+	#die; # DEBUG
+	die unless await $self->_timer->timed_out;
 }
 
 1;
