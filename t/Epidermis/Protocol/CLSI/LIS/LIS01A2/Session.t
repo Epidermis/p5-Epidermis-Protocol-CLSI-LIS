@@ -11,8 +11,6 @@ use Future::IO::Impl::IOAsync;
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Message';
 
-use aliased 'Epidermis::Lab::Connection::Serial' => 'Connection::Serial';
-
 use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat';
 use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat::Role::WithChild';
 use Moo::Role ();
@@ -97,13 +95,10 @@ SKIP: {
 	};
 
 	my $setup_system = sub {
-		my ( $device, $system, $message ) = @_;
+		my ( $connection, $system, $message ) = @_;
 
 		my $session = Session->new(
-			connection => Connection::Serial->new(
-				device => $device,
-				mode => "9600,8,n,1",
-			),
+			connection => $connection,
 			session_system => $system,
 			name => substr($system, 0, 1),
 		);
@@ -124,13 +119,13 @@ SKIP: {
 
 	push @session_f, $loop->run_process(
 		code => sub {
-			$setup_system->( $socat->pty0, SYSTEM_COMPUTER, $message );
+			$setup_system->( $socat->connection0, SYSTEM_COMPUTER, $message );
 		}
 	);
 
 	push @session_f, $loop->run_process(
 		code => sub {
-			$setup_system->( $socat->pty1, SYSTEM_INSTRUMENT, undef );
+			$setup_system->( $socat->connection1, SYSTEM_INSTRUMENT, undef );
 		}
 	);
 
