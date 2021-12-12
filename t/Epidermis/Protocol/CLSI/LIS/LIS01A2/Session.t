@@ -115,18 +115,20 @@ SKIP: {
 
 	my @session_f;
 
-	$socat->start_via_child;
+	$socat->init;
 
 	push @session_f, $loop->run_process(
 		code => sub {
 			$setup_system->( $socat->connection0, SYSTEM_COMPUTER, $message );
-		}
+		},
+		setup => [ $socat->connection0->io_async_setup_keep ],
 	);
 
 	push @session_f, $loop->run_process(
 		code => sub {
 			$setup_system->( $socat->connection1, SYSTEM_INSTRUMENT, undef );
-		}
+		},
+		setup => [ $socat->connection1->io_async_setup_keep ],
 	);
 
 	$loop->await_all( @session_f );
