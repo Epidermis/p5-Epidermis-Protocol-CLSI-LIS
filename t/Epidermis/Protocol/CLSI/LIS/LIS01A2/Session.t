@@ -55,7 +55,6 @@ SKIP: {
 
 	my $open_handle = sub {
 		my ($conn) = @_;
-		$conn->open_handle;
 		#$conn->handle->blocking(0);
 		#$conn->handle->cfmakeraw;
 		#$conn->handle->setflag_echo(0);
