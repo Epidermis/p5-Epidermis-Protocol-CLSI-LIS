@@ -15,13 +15,15 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 
 use Future::AsyncAwait;
 
-use MooX::Struct StateTransition => [
+use MooX::Struct -retain,
+StateTransition => [
 	qw( from transition to ),
 	TO_STRING => sub {
 		my ($self) = @_;
 		"[ @{[ $self->from ]} ] -- @{[ $self->transition ]} --> [ @{[ $self->to ]} ]"
 	}
 ];
+our $StateTransition = StateTransition;
 
 has state_machine => (
 	is => 'ro',
