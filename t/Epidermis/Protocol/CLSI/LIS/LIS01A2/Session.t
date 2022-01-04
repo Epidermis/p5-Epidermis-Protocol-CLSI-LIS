@@ -11,8 +11,6 @@ use Future::IO::Impl::IOAsync;
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Message';
 
-use aliased 'Epidermis::Lab::Connection::Serial' => 'Connection::Serial';
-
 use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat';
 use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat::Role::WithChild';
 use Moo::Role ();
@@ -46,7 +44,7 @@ SKIP: {
 
 	Log::Any::Adapter->set( {
 		lexically => \my $lex,
-		category => qr/^Epidermis::Protocol::CLSI::LIS::LIS01A2::Session/ },
+		category => qr/^main$|^Epidermis::Protocol::CLSI::LIS::LIS01A2::Session/ },
 		'Screen', min_level => 'trace', formatter => sub { $_[1] =~ s/^/  # LOG: /mgr } ) if $ENV{TEST_VERBOSE};
 
 	my $message = LIS01A2::Message->create_message('Hello, world!');
@@ -55,7 +53,6 @@ SKIP: {
 
 	my $open_handle = sub {
 		my ($conn) = @_;
-		$conn->open_handle;
 		#$conn->handle->blocking(0);
 		#$conn->handle->cfmakeraw;
 		#$conn->handle->setflag_echo(0);
@@ -68,6 +65,7 @@ SKIP: {
 		$log->trace("===> $session");
 
 		my $count_in_idle = 0;
+		my $step_count = 0;
 		my $r_f = repeat {
 			my $f = $session->step
 				->on_fail(sub {
@@ -75,15 +73,16 @@ SKIP: {
 					$log->trace( "Failed: " . Dumper($f1) );
 				})->followed_by(sub {
 					my ($f1) = @_;
-					$log->trace( "Step: " . do {
-						local $Data::Dumper::Terse = 1;
-						local $Data::Dumper::Indent = 0;
-						local $Data::Dumper::Sortkeys = 1;
-						Dumper($f1->get)
-					} );
-					$log->trace("Then: $session");
 					$count_in_idle++ if $session->session_state eq STATE_N_IDLE;
-					$log->trace(" Idle count $session: $count_in_idle" );
+					++$step_count;
+					$log->tracef(
+						"[%s] Step %d (I:%d): %s :: %s",
+						$session->name,
+						$step_count,
+						$count_in_idle,
+						$f1->get,
+						$session,
+					);
 					Future->done;
 				})->else(sub {
 					Future->done;
@@ -96,14 +95,12 @@ SKIP: {
 	};
 
 	my $setup_system = sub {
-		my ( $device, $system, $message ) = @_;
+		my ( $connection, $system, $message ) = @_;
 
 		my $session = Session->new(
-			connection => Connection::Serial->new(
-				device => $device,
-				mode => "9600,8,n,1",
-			),
+			connection => $connection,
 			session_system => $system,
+			name => substr($system, 0, 1),
 		);
 
 		$open_handle->( $session->connection );
@@ -118,18 +115,20 @@ SKIP: {
 
 	my @session_f;
 
-	$socat->start_via_child;
+	$socat->init;
 
 	push @session_f, $loop->run_process(
 		code => sub {
-			$setup_system->( $socat->pty0, SYSTEM_COMPUTER, $message );
-		}
+			$setup_system->( $socat->connection0, SYSTEM_COMPUTER, $message );
+		},
+		setup => [ $socat->connection0->io_async_setup_keep ],
 	);
 
 	push @session_f, $loop->run_process(
 		code => sub {
-			$setup_system->( $socat->pty1, SYSTEM_INSTRUMENT, undef );
-		}
+			$setup_system->( $socat->connection1, SYSTEM_INSTRUMENT, undef );
+		},
+		setup => [ $socat->connection1->io_async_setup_keep ],
 	);
 
 	$loop->await_all( @session_f );

@@ -4,11 +4,10 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Control;
 use Mu::Role;
 use MooX::Should;
 
-use Types::Standard qw(CodeRef);
+use Types::Standard qw(CodeRef InstanceOf);
 
 use Future::AsyncAwait;
 use Future::Buffer;
-use Future::IO;
 use boolean;
 
 use Epidermis::Protocol::CLSI::LIS::Constants qw(
@@ -23,6 +22,7 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_system :timer);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::TimerFactory';
 
 use Data::Hexdumper ();
 
@@ -73,7 +73,7 @@ sub _read_control {
 	if( LIS_DEBUG && $self->_logger->is_trace) {
 		$f = $f->then(sub {
 			my ($result) = @_;
-			$self->_logger->trace( "Read control:\n"
+			$self->_logger->trace( $self->_logger_name_prefix . "Read control:\n"
 				. Data::Hexdumper::hexdump( data => $result, suppress_warnings => true ) );
 			Future->done( $result )
 		});
@@ -94,28 +94,24 @@ after _reset_after_step => sub {
 
 #### Timer
 
+has _timer_factory => (
+	is => 'rw',
+	isa => InstanceOf[TimerFactory],
+	default => sub { TimerFactory->new; },
+);
+
 has _timer => (
 	is => 'rw',
+	lazy => 1,
 	default => sub {
-		+{
-			type => 'initial',
-			future => Future->done,
-		}
+		my ($self) = @_;
+		$self->_timer_factory->at_initial;
 	},
 );
 
 async sub time_out {
 	my ($self) = @_;
-	my $future = $self->_timer->{future};
-
-	my $timed_out;
-	await $future->on_cancel(sub {
-		$timed_out = 0;
-	})->on_done(sub {
-		$timed_out = 1;
-	});
-
-	return $timed_out;
+	await $self->_timer->timed_out;
 };
 
 #### Busy status
@@ -204,37 +200,22 @@ async sub do_send_nak {
 
 async sub do_reset_receiver_timer {
 	my ($self) = @_;
-	$self->_timer( {
-		type => 'receiver',
-		future => Future::IO->sleep(TIMER_DURATION_RECEIVER)->set_label('receiver timer')
-	} );
+	$self->_timer( $self->_timer_factory->at_receiver );
 }
 
 async sub do_reset_sender_timer {
 	my ($self) = @_;
-	$self->_timer( {
-		type => 'sender',
-		future => Future::IO->sleep(TIMER_DURATION_SENDER)->set_label('sender timer')
-	} );
+	$self->_timer( $self->_timer_factory->at_sender );
 }
 
 async sub do_reset_contention_busy_timer {
 	my ($self) = @_;
 	if( await $self->event_on_receive_enq ) {
-		$self->_timer( {
-			type => 'contention',
-			future => Future::IO->sleep(
-					$self->session_system eq SYSTEM_INSTRUMENT
-					? TIMER_DURATION_CONTENTION_INSTRUMENT
-					: TIMER_DURATION_CONTENTION_COMPUTER
-				)->set_label('contention timer')
-		} );
+		$self->_timer( $self->_timer_factory
+			->at_contention_for_system($self->session_system)
+		);
 	} else {
-		$self->_timer( {
-			type => 'busy',
-			future => Future::IO->sleep(TIMER_DURATION_BUSY)
-				->set_label('busy timer')
-		} );
+		$self->_timer( $self->_timer_factory->at_busy );
 	}
 }
 
@@ -289,7 +270,7 @@ async sub event_on_receive_nak_or_fail {
 async sub event_on_establishment_timers_running {
 	my ($self) = @_;
 	die; # DEBUG
-	#die unless ! $self->_timer->{future}->is_ready;
+	#die unless ! $self->_timer->future->is_ready;
 }
 
 async sub event_on_establishment_timers_timed_out {
@@ -323,8 +304,8 @@ async sub event_on_interrupt_accept_or_time_out {
 
 async sub event_on_timed_out {
 	my ($self) = @_;
-	die; # DEBUG
-	#die unless $self->_timer->{future}->is_done;
+	#die; # DEBUG
+	die unless await $self->_timer->timed_out;
 }
 
 1;

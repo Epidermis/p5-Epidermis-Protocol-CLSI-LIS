@@ -4,6 +4,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Retry;
 use Moo::Role;
 use MooX::Should;
 use Future::AsyncAwait;
+use boolean;
 
 use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS01A2_MAX_RETRIES);
 
@@ -43,11 +44,13 @@ sub _can_retry {
 async sub event_on_can_retry {
 	my ($self) = @_;
 	die unless $self->_can_retry;
+	true;
 }
 
 async sub event_on_no_can_retry {
 	my ($self) = @_;
 	die if $self->_can_retry;
+	true;
 }
 
 1;

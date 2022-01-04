@@ -27,6 +27,19 @@ has device_type => (
 	default => sub { DEVICE__START_DEVICE },
 );
 
+has name => (
+	is => 'ro',
+	default => sub { '' },
+);
+
+sub _logger_name_prefix {
+	my ($self) = @_;
+	if( $self->name ) {
+		return $self->name . "| ";
+	}
+	return '';
+}
+
 sub CONTEXT_TO_STRING {
 	my ($self) = @_;
 	"[ Context: [ System: <@{[ $self->session_system ]}>, Device type: <@{[ $self->device_type ]}> ] ]";

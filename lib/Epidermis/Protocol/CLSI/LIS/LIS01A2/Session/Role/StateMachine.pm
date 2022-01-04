@@ -15,6 +15,16 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 
 use Future::AsyncAwait;
 
+use MooX::Struct -retain,
+StateTransition => [
+	qw( from transition to ),
+	TO_STRING => sub {
+		my ($self) = @_;
+		"[ @{[ $self->from ]} ] -- @{[ $self->transition ]} --> [ @{[ $self->to ]} ]"
+	}
+];
+our $StateTransition = StateTransition;
+
 has state_machine => (
 	is => 'ro',
 	default => sub { StateMachine->new; },
@@ -38,7 +48,7 @@ async sub step {
 	do {
 		local $Data::Dumper::Terse = 1;
 		local $Data::Dumper::Indent = 0;
-		$self->_logger->debug( "State @{[ $self->session_state ]}: Events " . Dumper([ sort { $a cmp $b } @$events ]) )
+		$self->_logger->debug( $self->_logger_name_prefix . "State @{[ $self->session_state ]}: Events " . Dumper([ sort { $a cmp $b } @$events ]) )
 	} if $self->_logger->is_debug;
 	my @events_cb = @{ $self->_event_dispatch_table }{ @$events };
 
@@ -56,7 +66,7 @@ async sub step {
 	);
 
 	do {
-		$self->_logger->debug( "Transition: [ @{[ $from ]} ] -- @{[ $transition_event ]} --> [ @{[ $transition_data->{to} ]} ]" )
+		$self->_logger->debug( $self->_logger_name_prefix . "Transition: [ @{[ $from ]} ] -- @{[ $transition_event ]} --> [ @{[ $transition_data->{to} ]} ]" )
 	} if $self->_logger->is_debug;
 
 	$self->session_state( $transition_data->{to} );
@@ -70,11 +80,11 @@ async sub step {
 
 	await $actions_done->followed_by( sub { $self->_reset_after_step; Future->done } );
 
-	return {
-		from => $from,
-		transition => $transition_event,
-		to => $transition_data->{to}
-	};
+	return StateTransition[
+		$from,
+		$transition_event,
+		$transition_data->{to}
+	];
 }
 
 sub _reset_after_step { }
