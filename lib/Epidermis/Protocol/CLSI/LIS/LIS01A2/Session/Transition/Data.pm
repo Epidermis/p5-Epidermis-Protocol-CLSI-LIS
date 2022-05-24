@@ -3,6 +3,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Data;
 
 use Moo::Role;
 use Future::AsyncAwait;
+use MooX::Should;
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue;
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
@@ -15,8 +16,10 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_device);
 
 use boolean;
+use Types::Standard qw(Maybe);
 
 requires '_data_to_send_future';
+requires '_message_queue_empty_future';
 
 requires '_message_queue';
 requires '_frame_number';
@@ -31,6 +34,9 @@ has _current_sendable_message => (
 
 has _current_receivable_message => (
 	is => 'rw',
+	should => Maybe[
+		$Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue::ReceivableMessage->TYPE_TINY
+	],
 	predicate => 1,
 	clearer => 1,
 );
