@@ -3,6 +3,7 @@ package Epidermis::Protocol::CLSI::LIS;
 
 use strict;
 use warnings;
+use namespace::autoclean;
 
 1;
 

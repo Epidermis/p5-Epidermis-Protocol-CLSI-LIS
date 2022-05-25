@@ -1,6 +1,9 @@
-use Modern::Perl;
 package Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 # ABSTRACT: Metaclass helpers for defining records
+
+use strict;
+use warnings;
+use namespace::autoclean;
 
 use Import::Into;
 use Moo::_Utils qw(_install_tracked);

@@ -1,7 +1,10 @@
 package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue;
 # ABSTRACT: Classes to help manage session message queue
 
-use Modern::Perl;
+use strict;
+use warnings;
+use namespace::autoclean;
+
 use Types::Standard qw(InstanceOf Str);
 use Epidermis::Protocol::CLSI::LIS::Types qw(FrameNumber);
 

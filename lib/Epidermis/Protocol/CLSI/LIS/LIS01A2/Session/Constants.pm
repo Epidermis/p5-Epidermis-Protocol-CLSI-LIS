@@ -1,7 +1,8 @@
 package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants;
 # ABSTRACT: Constants for session internals
 
-use Modern::Perl;
+use strict;
+use warnings;
 
 our @_ENUM_SYSTEM = qw(SYSTEM_INSTRUMENT SYSTEM_COMPUTER);
 our @_ENUM_DEVICE = qw(DEVICE_SENDER DEVICE_RECEIVER DEVICE_NEUTRAL);

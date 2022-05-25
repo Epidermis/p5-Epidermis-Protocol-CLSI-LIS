@@ -1,7 +1,8 @@
 package Epidermis::Protocol::CLSI::LIS::Constants;
 # ABSTRACT: Constants for protocol
 
-use Modern::Perl;
+use strict;
+use warnings;
 
 use Const::Exporter
 constants => [

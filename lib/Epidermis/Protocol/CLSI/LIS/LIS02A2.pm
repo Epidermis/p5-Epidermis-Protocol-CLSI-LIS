@@ -1,6 +1,9 @@
-use Modern::Perl;
 package Epidermis::Protocol::CLSI::LIS::LIS02A2;
 # ABSTRACT: Data protocol
+
+use strict;
+use warnings;
+use namespace::autoclean;
 
 use Const::Fast;
 

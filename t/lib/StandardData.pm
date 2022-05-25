@@ -1,7 +1,8 @@
 package StandardData;
 # ABSTRACT: Data from standard
 
-use Modern::Perl;
+use strict;
+use warnings;
 use List::AllUtils qw(first);
 
 sub lis02a2_standard_data {

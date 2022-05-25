@@ -1,6 +1,9 @@
-use Modern::Perl;
 package Epidermis::Protocol::CLSI::LIS::Types;
 # ABSTRACT: Type library for LIS standards
+
+use strict;
+use warnings;
+use namespace::autoclean;
 
 use Type::Library 0.008 -base,
 	-declare => [qw(
