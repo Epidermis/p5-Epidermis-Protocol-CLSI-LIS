@@ -1,9 +1,9 @@
-use Modern::Perl;
 package Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageHeader;
 # ABSTRACT: Message Header Record
 ### LIS02A2: 6     Message Header Record
 
 use Moo;
+use namespace::autoclean;
 use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 use Epidermis::Protocol::CLSI::LIS::Types qw(Separator);
 use Types::Standard        qw(Str StrMatch ArrayRef);

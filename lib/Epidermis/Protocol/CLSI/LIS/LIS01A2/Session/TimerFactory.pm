@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::TimerFactory;
 # ABSTRACT: Factory for timers needed in various state transitions
 
 use Mu;
+use namespace::autoclean;
 use Future;
 use Future::IO;
 

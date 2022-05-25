@@ -1,9 +1,9 @@
-use Modern::Perl;
 package Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::ManufacturerInformation;
 # ABSTRACT: Manufacturer Information Record
 ### LIS02A2: 14 Manufacturer Information Record
 
 use Moo;
+use namespace::autoclean;
 use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 
 ### 5.5.8 Manufacturer Information Record (M)

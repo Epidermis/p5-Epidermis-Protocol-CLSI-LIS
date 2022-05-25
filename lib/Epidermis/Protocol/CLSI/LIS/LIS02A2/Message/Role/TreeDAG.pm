@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS02A2::Message::Role::TreeDAG;
 # ABSTRACT: A role to create a Tree::DAG_Node from records
 
 use Moo::Role;
+use namespace::autoclean;
 
 use Tree::DAG_Node;
 

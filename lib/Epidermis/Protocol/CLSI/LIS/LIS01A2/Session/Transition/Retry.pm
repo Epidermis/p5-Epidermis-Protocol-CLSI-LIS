@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Retry;
 # ABSTRACT: Retry transitions
 
 use Moo::Role;
+use namespace::autoclean;
 use MooX::Should;
 use Future::AsyncAwait;
 use boolean;

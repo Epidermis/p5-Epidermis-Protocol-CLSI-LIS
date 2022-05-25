@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Control;
 # ABSTRACT: Session control transitions
 
 use Mu::Role;
+use namespace::autoclean;
 use MooX::Should;
 
 use Types::Standard qw(CodeRef InstanceOf);

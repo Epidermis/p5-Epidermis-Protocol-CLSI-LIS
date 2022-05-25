@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::Device;
 # ABSTRACT: Device type actions
 
 use Moo::Role;
+use namespace::autoclean;
 use Future::AsyncAwait;
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants

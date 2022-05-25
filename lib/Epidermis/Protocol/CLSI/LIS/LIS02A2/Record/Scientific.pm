@@ -1,9 +1,9 @@
-use Modern::Perl;
 package Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::Scientific;
 # ABSTRACT: Scientific Record
 ### LIS02A2: 13 Scientific Record
 
 use Moo;
+use namespace::autoclean;
 use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 
 ### LIS02A2: 13.1 Record Type ID

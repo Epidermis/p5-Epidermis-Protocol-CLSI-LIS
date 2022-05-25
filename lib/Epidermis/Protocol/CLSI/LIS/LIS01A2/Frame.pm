@@ -5,6 +5,7 @@ use utf8;
 use feature qw(state);
 
 use Mu;
+use namespace::autoclean;
 use MooX::Enumeration;
 
 use Convert::ASCIInames ();

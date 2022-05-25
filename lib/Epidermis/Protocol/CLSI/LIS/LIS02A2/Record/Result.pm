@@ -1,9 +1,9 @@
-use Modern::Perl;
 package Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::Result;
 # ABSTRACT: Result Record
 ### LIS02A2: 9     Result Record
 
 use Moo;
+use namespace::autoclean;
 use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 
 ### LIS02A2: 9.1    Record Type ID

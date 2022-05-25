@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Timer;
 # ABSTRACT: A specific type of timer
 
 use Mu;
+use namespace::autoclean;
 use Types::Standard qw(Str InstanceOf);
 use Future::AsyncAwait;
 use boolean;

@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::DataTransfer;
 # ABSTRACT: Role for session data transfer
 
 use Mu::Role;
+use namespace::autoclean;
 use MooX::HandlesVia;
 use MooX::Should;
 

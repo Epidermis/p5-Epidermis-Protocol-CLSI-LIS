@@ -1,9 +1,9 @@
-use Modern::Perl;
 package Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::RequestInformation;
 # ABSTRACT: Request Information Record
 ### LIS02A2: 11 Request Information Record
 
 use Moo;
+use namespace::autoclean;
 use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 
 ### LIS02A2: 11.1 Record Type ID

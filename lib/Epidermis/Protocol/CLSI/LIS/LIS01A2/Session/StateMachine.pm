@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::StateMachine;
 # ABSTRACT: A state machine for the session
 
 use Moo;
+use namespace::autoclean;
 use MooX::Should;
 use Devel::StrictMode;
 use Sub::Trigger::Lock qw( Lock unlock );

@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::StateMachine;
 # ABSTRACT: Session state machine role
 
 use Mu::Role;
+use namespace::autoclean;
 use MooX::Enumeration;
 
 use Data::Dumper;

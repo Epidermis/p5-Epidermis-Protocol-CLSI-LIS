@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session;
 # ABSTRACT: LIS01A2::Session - a total unit of communication activity
 
 use Mu;
+use namespace::autoclean;
 use MooX::Role::Logger (); # declare dependency (role)
 
 use overload

@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Message;
 # ABSTRACT: LIS01A2 Message - a collection of related information on a single topic
 
 use Moo;
+use namespace::autoclean;
 use MooX::HandlesVia;
 
 use Epidermis::Protocol::CLSI::LIS::Types qw(FrameNumber);

@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS02A2::Message;
 # ABSTRACT: LIS02A2 Message - collection of records from header to message terminator records
 
 use Moo;
+use namespace::autoclean;
 use MooX::HandlesVia;
 
 use Types::Standard qw(ArrayRef ConsumerOf);

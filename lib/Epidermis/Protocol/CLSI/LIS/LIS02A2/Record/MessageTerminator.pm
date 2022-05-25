@@ -1,9 +1,9 @@
-use Modern::Perl;
 package Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageTerminator;
 # ABSTRACT: Message Terminator Record
 ### LIS02A2: 12 Message Terminator Record
 
 use Moo;
+use namespace::autoclean;
 use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 
 ### LIS02A2: 12.1 Record Type ID

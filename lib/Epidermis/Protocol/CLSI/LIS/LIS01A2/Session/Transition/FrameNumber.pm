@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Transition::FrameNumbe
 # ABSTRACT: Frame number actions
 
 use Mu::Role;
+use namespace::autoclean;
 use Future::AsyncAwait;
 use MooX::Should;
 

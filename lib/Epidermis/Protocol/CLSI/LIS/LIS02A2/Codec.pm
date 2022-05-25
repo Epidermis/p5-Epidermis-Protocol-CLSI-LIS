@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS02A2::Codec;
 # ABSTRACT: Encoder-decoder for LIS02A2
 
 use Moo;
+use namespace::autoclean;
 use Epidermis::Protocol::CLSI::LIS::Constants qw(
 	ENCODING
 );

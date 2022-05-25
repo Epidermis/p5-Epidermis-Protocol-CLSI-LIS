@@ -2,6 +2,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::Context;
 # ABSTRACT: Session context
 
 use Mu::Role;
+use namespace::autoclean;
 use MooX::Enumeration;
 
 use Types::Standard qw(Enum);

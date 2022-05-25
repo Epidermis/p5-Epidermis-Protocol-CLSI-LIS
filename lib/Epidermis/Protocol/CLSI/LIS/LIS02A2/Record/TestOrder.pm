@@ -1,9 +1,9 @@
-use Modern::Perl;
 package Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::TestOrder;
 # ABSTRACT: Test Order Record
 ### LIS02A2: 8     Test Order Record
 
 use Moo;
+use namespace::autoclean;
 use Epidermis::Protocol::CLSI::LIS::LIS02A2::Meta::Record;
 
 ### LIS02A2: 8.4.1 Record Type ID
