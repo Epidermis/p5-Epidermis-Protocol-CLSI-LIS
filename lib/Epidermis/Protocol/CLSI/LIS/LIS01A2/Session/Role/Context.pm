@@ -4,14 +4,16 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::Context;
 use Mu::Role;
 use namespace::autoclean;
 use MooX::Enumeration;
+use MooX::Should;
 
-use Types::Standard qw(Enum);
+use Types::Standard qw(Enum ConsumerOf);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_system :enum_device);
 
 has connection => (
 	is => 'ro',
+	should => ConsumerOf['Epidermis::Lab::Connection::Role::Handles'],
 	required => 1,
 );
 
