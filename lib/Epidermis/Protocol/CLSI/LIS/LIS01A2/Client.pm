@@ -17,29 +17,28 @@ use boolean;
 
 async sub do_until_neutral_state {
 	my ($self) = @_;
-	my $session = $self;
 
-	die "Invalid start state: @{[ $session->session_state ]}"
-		if $session->session_state ne STATE_N_IDLE;
+	die "Invalid start state: @{[ $self->session_state ]}"
+		if $self->session_state ne STATE_N_IDLE;
 
 	my $count_in_idle = 0;
 	my $step_count = 0;
 	my $r_f = repeat {
-		my $f = $session->step
+		my $f = $self->step
 			->on_fail(sub {
 				my ($f1) = @_;
-				$session->_logger->trace( "Failed: " . Dumper($f1) );
+				$self->_logger->trace( "Failed: " . Dumper($f1) );
 			})->followed_by(sub {
 				my ($f1) = @_;
-				$count_in_idle++ if $session->session_state eq STATE_N_IDLE;
+				$count_in_idle++ if $self->session_state eq STATE_N_IDLE;
 				++$step_count;
-				$session->_logger->tracef(
+				$self->_logger->tracef(
 					"[%s] Step %d (I:%d): %s :: %s",
-					$session->name,
+					$self->name,
 					$step_count,
 					$count_in_idle,
 					$f1->get,
-					$session,
+					$self,
 				);
 				Future->done;
 			})->else(sub {
