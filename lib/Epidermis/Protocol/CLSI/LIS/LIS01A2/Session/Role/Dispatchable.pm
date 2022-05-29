@@ -4,21 +4,18 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::Dispatchable;
 use Mu::Role;
 use namespace::autoclean;
 
-use Package::Stash;
-
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_event :enum_action);
 
 lazy _action_dispatch_table => sub {
 	my ($self) = @_;
 	my $dispatch;
-	my $stash = Package::Stash->new( ref $self );
 	for my $action (@ENUM_ACTION) {
-		my $action_symbol = "&do_${action}";
-		if( my $code = $stash->get_symbol( $action_symbol ) ) {
+		my $action_method = "do_${action}";
+		if( my $code = $self->can( $action_method ) ) {
 			$dispatch->{ $action } = $code;
 		} else {
-			warn "No method $action_symbol for action $action";
+			warn "No method $action_method for action $action";
 		}
 	}
 	$dispatch;
@@ -27,13 +24,12 @@ lazy _action_dispatch_table => sub {
 lazy _event_dispatch_table => sub {
 	my ($self) = @_;
 	my $dispatch;
-	my $stash = Package::Stash->new( ref $self );
 	for my $event (@ENUM_EVENT) {
-		my $event_symbol = "&event_on_${event}";
-		if( my $code = $stash->get_symbol( $event_symbol ) ) {
+		my $event_method = "event_on_${event}";
+		if( my $code = $self->can( $event_method ) ) {
 			$dispatch->{ $event } = $code;
 		} else {
-			warn "No method $event_symbol for event $event";
+			warn "No method $event_method for event $event";
 		}
 	}
 	$dispatch;
