@@ -8,7 +8,7 @@ use StandardData;
 use IO::Async::Loop;
 use Future::IO::Impl::IOAsync;
 
-use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session';
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Client';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Message';
 
 use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat';
@@ -21,13 +21,8 @@ use Log::Any::Adapter::Screen ();
 
 use Log::Any qw($log);
 
-use Future::Utils qw(fmap_void repeat);
-use Data::Dumper;
-
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_system :enum_state);
-
-use boolean;
 
 subtest "Test session" => sub {
 SKIP: {
@@ -44,7 +39,7 @@ SKIP: {
 
 	Log::Any::Adapter->set( {
 		lexically => \my $lex,
-		category => qr/^main$|^Epidermis::Protocol::CLSI::LIS::LIS01A2::Session/ },
+		category => qr/^main$|^Epidermis::Protocol::CLSI::LIS::LIS01A2::Client/ },
 		'Screen', min_level => 'trace', formatter => sub { $_[1] =~ s/^/  # LOG: /mgr } ) if $ENV{TEST_VERBOSE};
 
 	my $message = LIS01A2::Message->create_message('Hello, world!');
@@ -61,56 +56,28 @@ SKIP: {
 
 	my $run_sm = sub {
 		my $loop = shift;
-		my $session = shift;
-		$log->trace("===> $session");
-
-		my $count_in_idle = 0;
-		my $step_count = 0;
-		my $r_f = repeat {
-			my $f = $session->step
-				->on_fail(sub {
-					my ($f1) = @_;
-					$log->trace( "Failed: " . Dumper($f1) );
-				})->followed_by(sub {
-					my ($f1) = @_;
-					$count_in_idle++ if $session->session_state eq STATE_N_IDLE;
-					++$step_count;
-					$log->tracef(
-						"[%s] Step %d (I:%d): %s :: %s",
-						$session->name,
-						$step_count,
-						$count_in_idle,
-						$f1->get,
-						$session,
-					);
-					Future->done;
-				})->else(sub {
-					Future->done;
-				});
-		} until => sub {
-			$count_in_idle == 1;
-		};
-
-		$loop->await_all( $r_f );
+		my $client = shift;
+		$log->trace("===> $client");
+		$loop->await_all( $client->do_until_neutral_state );
 	};
 
 	my $setup_system = sub {
 		my ( $connection, $system, $message ) = @_;
 
-		my $session = Session->new(
+		my $client = Client->new(
 			connection => $connection,
 			session_system => $system,
 			name => substr($system, 0, 1),
 		);
 
-		$open_handle->( $session->connection );
+		$open_handle->( $client->connection );
 
 		my $message_sent_f;
 		if( $message ) {
-			$session->send_message( $message );
+			$client->send_message( $message );
 		}
 
-		$run_sm->( IO::Async::Loop->new, $session );
+		$run_sm->( IO::Async::Loop->new, $client );
 	},
 
 	my @session_f;
