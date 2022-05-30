@@ -58,7 +58,7 @@ SKIP: {
 		my $loop = shift;
 		my $client = shift;
 		$log->trace("===> $client");
-		$loop->await_all( $client->do_until_neutral_state );
+		$loop->await_all( $client->process_until_idle );
 	};
 
 	my $setup_system = sub {
