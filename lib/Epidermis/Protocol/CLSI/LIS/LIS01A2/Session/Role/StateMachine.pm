@@ -11,6 +11,7 @@ use Types::Standard qw(Enum);
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::StateMachine';
 
+use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS_DEBUG);
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_state);
 
@@ -50,7 +51,7 @@ async sub step {
 		local $Data::Dumper::Terse = 1;
 		local $Data::Dumper::Indent = 0;
 		$self->_logger->debug( $self->_logger_name_prefix . "State @{[ $self->session_state ]}: Events " . Dumper([ sort { $a cmp $b } @$events ]) )
-	} if $self->_logger->is_debug;
+	} if LIS_DEBUG && $self->_logger->is_debug;
 	my @events_cb = @{ $self->_event_dispatch_table }{ @$events };
 
 	my $transition_event = await Future->needs_any( map {
@@ -68,7 +69,7 @@ async sub step {
 
 	do {
 		$self->_logger->debug( $self->_logger_name_prefix . "Transition: [ @{[ $from ]} ] -- @{[ $transition_event ]} --> [ @{[ $transition_data->{to} ]} ]" )
-	} if $self->_logger->is_debug;
+	} if LIS_DEBUG && $self->_logger->is_debug;
 
 	$self->session_state( $transition_data->{to} );
 
