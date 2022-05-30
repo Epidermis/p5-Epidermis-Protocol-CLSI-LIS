@@ -13,6 +13,7 @@ use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Mess
 
 use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat';
 use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat::Role::WithChild';
+use aliased 'Epidermis::Lab::Test::Connection::Pipely';
 use Moo::Role ();
 use Try::Tiny;
 
@@ -26,16 +27,38 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 
 subtest "Test session" => sub {
 SKIP: {
-	my $socat = try {
-		Moo::Role->create_class_with_roles(Socat, WithChild)
-			->new(
-				$ENV{TEST_VERBOSE}
-				? ( message_level => 0, socat_opts => [ qw(-x -v) ] )
-				: ()
-			);
-	} catch {
-		skip $_;
-	};
+	my $test_conn;
+	for my $try (
+		[ Socat => sub {
+			Moo::Role->create_class_with_roles(Socat, WithChild)
+				->new(
+					$ENV{TEST_VERBOSE}
+					? ( message_level => 0, socat_opts => [ qw(-x -v) ] )
+					: ()
+				);
+		}],
+		[ Pipely => sub {
+			Pipely->new;
+		}]
+	) {
+		my ($name, $code) = @$try;
+		my $conn = try {
+			note "Trying test connection $name";
+			$code->();
+		} catch {
+			note "Error with $name test connection: $_";
+		};
+		if( $conn ) {
+			$test_conn = $conn;
+			last;
+		} else {
+			next;
+		}
+	}
+
+	skip "Could not create any test connection" unless $test_conn;
+
+	note "Test connection: ", ref $test_conn;
 
 	Log::Any::Adapter->set( {
 		lexically => \my $lex,
@@ -94,20 +117,20 @@ SKIP: {
 
 	my @session_f;
 
-	$socat->init;
+	$test_conn->init;
 
 	push @session_f, $loop->run_process(
 		code => sub {
-			$setup_system->( $socat->connection0, SYSTEM_COMPUTER, $message );
+			$setup_system->( $test_conn->connection0, SYSTEM_COMPUTER, $message );
 		},
-		setup => [ $socat->connection0->io_async_setup_keep ],
+		setup => [ $test_conn->connection0->io_async_setup_keep ],
 	);
 
 	push @session_f, $loop->run_process(
 		code => sub {
-			$setup_system->( $socat->connection1, SYSTEM_INSTRUMENT, undef );
+			$setup_system->( $test_conn->connection1, SYSTEM_INSTRUMENT, undef );
 		},
-		setup => [ $socat->connection1->io_async_setup_keep ],
+		setup => [ $test_conn->connection1->io_async_setup_keep ],
 	);
 
 	$loop->await_all( @session_f );
