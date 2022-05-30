@@ -58,6 +58,18 @@ SKIP: {
 		my $loop = shift;
 		my $client = shift;
 		$log->trace("===> $client");
+		my $step_count = 0;
+		$client->on( step => sub {
+			my ($event) = @_;
+			++$step_count;
+			$log->tracef(
+				"[%s] Step %d: %s :: %s",
+				$event->emitter->name,
+				$step_count,
+				$event->state_transition,
+				$event->emitter,
+			);
+		});
 		$loop->await_all( $client->process_until_idle );
 	};
 

@@ -7,6 +7,8 @@ use namespace::autoclean;
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_state);
 
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Process::StepEvent';
+
 use Future::AsyncAwait;
 use Future::Utils qw(repeat);
 
@@ -20,7 +22,6 @@ async sub process_until_idle {
 	die "Invalid start state: @{[ $self->session_state ]}"
 		if $self->session_state ne STATE_N_IDLE;
 
-	my $step_count = 0;
 	my $r_f = repeat {
 		my $f = $self->step
 			->on_fail(sub {
@@ -28,13 +29,9 @@ async sub process_until_idle {
 				$self->_logger->trace( "Failed: " . Dumper($f1) );
 			})->followed_by(sub {
 				my ($f1) = @_;
-				++$step_count;
-				$self->_logger->tracef(
-					"[%s] Step %d: %s :: %s",
-					$self->name,
-					$step_count,
-					$f1->get,
-					$self,
+				$self->emit( 'step',
+					class => StepEvent,
+					state_transition => $f1->get,
 				);
 				Future->done;
 			})->else(sub {
