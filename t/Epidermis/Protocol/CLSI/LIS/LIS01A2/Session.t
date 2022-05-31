@@ -9,6 +9,7 @@ use IO::Async::Loop;
 use Future::IO::Impl::IOAsync;
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Client';
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Process::EventEmitter' => 'Process::EventEmitter';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Message';
 
 use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat';
@@ -96,10 +97,11 @@ SKIP: {
 		$loop->await_all( $client->process_until_idle );
 	};
 
+	my $client_class = Moo::Role->create_class_with_roles(Client, Process::EventEmitter);
 	my $setup_system = sub {
 		my ( $connection, $system, $message ) = @_;
 
-		my $client = Client->new(
+		my $client = $client_class->new(
 			connection => $connection,
 			session_system => $system,
 			name => substr($system, 0, 1),

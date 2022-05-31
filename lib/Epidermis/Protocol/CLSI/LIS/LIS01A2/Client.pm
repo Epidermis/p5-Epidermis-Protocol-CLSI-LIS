@@ -10,6 +10,6 @@ use Data::Dumper;
 
 use boolean;
 
-with qw( Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Process::EventEmitter );
+with qw( Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Processable );
 
 1;
