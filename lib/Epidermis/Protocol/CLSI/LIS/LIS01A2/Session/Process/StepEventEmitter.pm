@@ -1,4 +1,4 @@
-package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Process::EventEmitter;
+package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Process::StepEventEmitter;
 # ABSTRACT: Role to emit session events
 
 use Mu::Role;
