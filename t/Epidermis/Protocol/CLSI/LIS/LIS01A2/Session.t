@@ -27,7 +27,8 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_system :enum_state);
 
 subtest "Test session" => sub {
-SKIP: {
+	plan skip_all => 'No POSIX fork()' if $^O eq 'MSWin32';
+
 	my $test_conn;
 	for my $try (
 		[ Socat => sub {
@@ -57,7 +58,7 @@ SKIP: {
 		}
 	}
 
-	skip "Could not create any test connection" unless $test_conn;
+	plan skip_all => "Could not create any test connection" unless $test_conn;
 
 	note "Test connection: ", ref $test_conn;
 
@@ -137,7 +138,6 @@ SKIP: {
 	$loop->await_all( @session_f );
 
 	pass;
-}
 };
 
 done_testing;
