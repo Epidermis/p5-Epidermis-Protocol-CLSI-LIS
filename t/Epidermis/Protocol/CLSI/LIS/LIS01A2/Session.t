@@ -109,13 +109,12 @@ SKIP: {
 
 		$open_handle->( $client->connection );
 
-		my $message_sent_f;
 		if( $message ) {
 			$client->send_message( $message );
 		}
 
 		$run_sm->( IO::Async::Loop->new, $client );
-	},
+	};
 
 	my @session_f;
 
