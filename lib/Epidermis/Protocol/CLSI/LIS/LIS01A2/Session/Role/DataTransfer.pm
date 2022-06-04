@@ -37,7 +37,7 @@ has _message_queue => (
 has _data_to_send_future => (
 	is => 'rw',
 	should => InstanceOf['Future'],
-	default => sub { Future->new },
+	default => sub { Future->new->set_label('_data_to_send') },
 );
 
 has _message_queue_empty_future => (
@@ -45,6 +45,13 @@ has _message_queue_empty_future => (
 	should => InstanceOf['Future'],
 	default => sub { Future->done(true) },
 );
+
+sub DEMOLISH {}
+before DEMOLISH => sub {
+	my ($self) = @_;
+	# no longer need this Future
+	$self->_data_to_send_future->cancel;
+};
 
 sub send_message {
 	my ($self, $message) = @_;
