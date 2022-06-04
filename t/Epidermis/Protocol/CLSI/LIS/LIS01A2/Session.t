@@ -4,6 +4,7 @@ use Test::Most tests => 1;
 
 use lib 't/lib';
 use StandardData;
+use Connection;
 
 use IO::Async::Loop;
 use Future::IO::Impl::IOAsync;
@@ -12,11 +13,7 @@ use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Client';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Process::StepEventEmitter' => 'Process::StepEventEmitter';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Message';
 
-use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat';
-use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat::Role::WithChild';
-use aliased 'Epidermis::Lab::Test::Connection::Pipely';
 use Moo::Role ();
-use Try::Tiny;
 
 use Log::Any::Adapter;
 use Log::Any::Adapter::Screen ();
@@ -29,37 +26,8 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 subtest "Test session" => sub {
 	plan skip_all => 'No POSIX fork()' if $^O eq 'MSWin32';
 
-	my $test_conn;
-	for my $try (
-		[ Socat => sub {
-			Moo::Role->create_class_with_roles(Socat, WithChild)
-				->new(
-					$ENV{TEST_VERBOSE}
-					? ( message_level => 0, socat_opts => [ qw(-x -v) ] )
-					: ()
-				);
-		}],
-		[ Pipely => sub {
-			Pipely->new;
-		}]
-	) {
-		my ($name, $code) = @$try;
-		my $conn = try {
-			note "Trying test connection $name";
-			$code->();
-		} catch {
-			note "Error with $name test connection: $_";
-		};
-		if( $conn ) {
-			$test_conn = $conn;
-			last;
-		} else {
-			next;
-		}
-	}
-
+	my $test_conn = Connection->build_test_connection;
 	plan skip_all => "Could not create any test connection" unless $test_conn;
-
 	note "Test connection: ", ref $test_conn;
 
 	Log::Any::Adapter->set( {
