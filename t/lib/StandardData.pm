@@ -1,4 +1,5 @@
-package StandardData;
+package # hide from PAUSE
+	StandardData;
 # ABSTRACT: Data from standard
 
 use strict;
