@@ -59,7 +59,7 @@ async sub step {
 		my $f = $events_cb[$idx]->($self)
 			->transform( done => sub { $events->[$idx] } )
 			->set_label( $events->[$idx] )
-	} 0..@events_cb-1 )->set_label("$self : events");
+	} 0..@events_cb-1 )->set_label( LIS_DEBUG ? "$self : events @$events" : "$self : events" );
 
 	my $from = $self->session_state;
 	my $transition_data = $self->state_machine->process_event(
@@ -78,9 +78,9 @@ async sub step {
 		my $action = $_;
 		my $f = $self->_action_dispatch_table->{$action}->($self)
 			->set_label($action)
-	} @actions)->set_label( 'actions' );
+	} @actions)->set_label( LIS_DEBUG ? "actions: @actions" : 'actions' );
 
-	await $actions_done->followed_by( sub { $self->_reset_after_step; Future->done } );
+	await $actions_done->followed_by( sub { $self->_reset_after_step; Future->done->set_label('reset after step') } );
 
 	return StateTransition[
 		$from,
