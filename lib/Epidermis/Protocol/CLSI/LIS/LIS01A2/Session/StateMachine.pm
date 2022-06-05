@@ -15,10 +15,13 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 
 # Document layout of state map.
 our $StateMapType = Map[
+	# From state
 	Enum[@ENUM_STATE],
 	Map[
+		# To state
 		Enum[@ENUM_STATE],
 		Dict[
+			# Transition
 			event => Enum[@ENUM_EVENT],
 			action => ArrayRef[Enum[@ENUM_ACTION]],
 		]
