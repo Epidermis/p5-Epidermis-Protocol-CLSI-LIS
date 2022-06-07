@@ -27,7 +27,7 @@ async sub process_until_idle {
 		my $f = $self->process_step
 			->on_fail(sub {
 				my ($f1) = @_;
-				$self->_logger->trace( "Failed: " . Dumper($f1) );
+				$self->_logger->trace( $self->_logger_name_prefix . "Failed: " . Dumper($f1) );
 			})
 			->else(sub {
 				Future->done;
