@@ -17,11 +17,8 @@ sub process_step {
 	$self->step;
 }
 
-async sub process_until_idle {
-	my ($self) = @_;
-
-	die "Invalid start state: @{[ $self->session_state ]}"
-		if $self->session_state ne STATE_N_IDLE;
+async sub _process_until_state {
+	my ($self, $state) = @_;
 
 	my $r_f = repeat {
 		my $f = $self->process_step
@@ -33,10 +30,19 @@ async sub process_until_idle {
 				Future->done;
 			});
 	} until => sub {
-		$self->session_state eq STATE_N_IDLE
+		$self->session_state eq $state
 	};
 
 	await $r_f;
+}
+
+async sub process_until_idle {
+	my ($self) = @_;
+
+	die "Invalid start state: @{[ $self->session_state ]}"
+		if $self->session_state ne STATE_N_IDLE;
+
+	await $self->_process_until_state( STATE_N_IDLE );
 }
 
 1;
