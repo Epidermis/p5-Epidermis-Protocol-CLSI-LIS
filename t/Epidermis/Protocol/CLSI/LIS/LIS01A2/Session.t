@@ -39,14 +39,6 @@ subtest "Test session" => sub {
 
 	my $loop = IO::Async::Loop->new;
 
-	my $open_handle = sub {
-		my ($conn) = @_;
-		#$conn->handle->blocking(0);
-		#$conn->handle->cfmakeraw;
-		#$conn->handle->setflag_echo(0);
-		#$conn->handle->setflag_clocal( 1 );
-	};
-
 	my $run_sm = sub {
 		my $loop = shift;
 		my $client = shift;
@@ -75,8 +67,6 @@ subtest "Test session" => sub {
 			session_system => $system,
 			name => substr($system, 0, 1),
 		);
-
-		$open_handle->( $client->connection );
 
 		if( $message ) {
 			$client->send_message( $message );

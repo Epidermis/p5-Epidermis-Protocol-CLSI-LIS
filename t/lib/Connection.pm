@@ -10,22 +10,24 @@ use aliased 'Epidermis::Lab::Test::Connection::Pipely';
 use Moo::Role ();
 use Try::Tiny;
 
-sub build_test_connection {
-	my $test_conn;
-	for my $try (
-		[ Socat => sub {
+my %CONNECTION_BUILDERS = (
+		Socat => sub {
 			Moo::Role->create_class_with_roles(Socat, WithChild)
 				->new(
 					$ENV{TEST_VERBOSE}
 					? ( message_level => 0, socat_opts => [ qw(-x -v) ] )
 					: ()
 				);
-		}],
-		[ Pipely => sub {
+		},
+		Pipely => sub {
 			Pipely->new;
-		}]
-	) {
-		my ($name, $code) = @$try;
+		},
+);
+
+sub build_test_connection {
+	my $test_conn;
+	for my $name (qw(Socat Pipely)) {
+		my $code = $CONNECTION_BUILDERS{$name};
 		my $conn = try {
 			note "Trying test connection $name";
 			$code->();
