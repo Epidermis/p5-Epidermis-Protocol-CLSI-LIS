@@ -248,6 +248,7 @@ async sub event_on_receive_enq_or_nak {
 async sub event_on_receive_enq {
 	my ($self) = @_;
 	die unless (await $self->_read_control) eq ENQ;
+	true;
 }
 
 async sub event_on_receive_ack {
@@ -270,15 +271,15 @@ async sub event_on_receive_nak_or_fail {
 
 async sub event_on_establishment_timers_running {
 	my ($self) = @_;
-	die; # DEBUG
-	#die unless ! $self->_timer->future->is_ready;
+	#die; # DEBUG
+	die unless ! $self->_timer->future->is_ready;
 }
 
 async sub event_on_establishment_timers_timed_out {
 	my ($self) = @_;
-	return true; # DEBUG
-	#my $timed_out = await $self->time_out;
-	#die unless $timed_out;
+	#return true; # DEBUG
+	my $timed_out = await $self->time_out;
+	die unless $timed_out;
 }
 
 async sub event_on_busy {
