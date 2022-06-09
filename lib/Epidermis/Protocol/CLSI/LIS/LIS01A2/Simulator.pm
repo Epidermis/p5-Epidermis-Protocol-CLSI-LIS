@@ -21,6 +21,10 @@ ro session =>  (
 	required => 1,
 );
 
+ro transitions => (
+	default => sub { [] },
+);
+
 async sub process_event {
 	my ($self, $event, $data ) = @_;
 	if( $event eq 'sim-step-n' && PositiveInt->check($data) ) {
@@ -28,7 +32,8 @@ async sub process_event {
 			do {
 				$self->_logger->tracef("Step %d/%d", $step, $data);
 			} if LIS_DEBUG && $self->_logger->is_trace;
-			await $self->session->step;
+			my $transition = await $self->session->step;
+			push @{ $self->transitions }, $transition;
 		}
 	} else {
 		die "unknown event $event";
