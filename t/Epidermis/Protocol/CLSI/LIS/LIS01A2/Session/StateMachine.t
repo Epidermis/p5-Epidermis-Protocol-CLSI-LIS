@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
-use Test::Most tests => 2;
+use Test2::V0;
+plan tests => 2;
 
 use lib 't/lib';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::StateMachine';

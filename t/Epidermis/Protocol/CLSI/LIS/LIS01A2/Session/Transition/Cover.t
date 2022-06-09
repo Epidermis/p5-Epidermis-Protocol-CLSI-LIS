@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
-use Test::Most tests => 1;
+use Test2::V0;
+plan tests => 1;
 
 use lib 't/lib';
 use Connection;

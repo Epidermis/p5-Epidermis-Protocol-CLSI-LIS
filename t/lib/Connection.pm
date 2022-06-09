@@ -2,7 +2,7 @@ package # hide from PAUSE
 	Connection;
 # ABSTRACT: Helper for creating test connection
 
-use Test::More;
+use Test2::V0;
 
 use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat';
 use aliased 'Epidermis::Lab::Test::Connection::Serial::Socat::Role::WithChild';
