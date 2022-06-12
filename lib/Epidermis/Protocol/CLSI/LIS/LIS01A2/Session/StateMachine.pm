@@ -4,11 +4,13 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::StateMachine;
 use Moo;
 use namespace::autoclean;
 use MooX::Should;
+use Sub::HandlesVia;
 use Devel::StrictMode;
 use Sub::Trigger::Lock qw( Lock unlock );
 use List::AllUtils qw(first);
 
 use Types::Standard qw(Map Enum Dict ArrayRef);
+use Types::Common::Numeric qw(PositiveOrZeroInt PositiveInt);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_state :enum_event :enum_action);
@@ -22,8 +24,9 @@ our $StateMapType = Map[
 		Enum[@ENUM_STATE],
 		Dict[
 			# Transition
-			event => Enum[@ENUM_EVENT],
+			event  => Enum[@ENUM_EVENT],
 			action => ArrayRef[Enum[@ENUM_ACTION]],
+			id     => PositiveInt,
 		]
 	]
 ];
@@ -33,6 +36,16 @@ has _state_map => (
 	default => sub { +{} },
 	trigger => Lock,
 	should => $StateMapType,
+);
+
+has _transition_counter => (
+	is => 'ro',
+	default => sub { 0 },
+	should => PositiveOrZeroInt,
+	handles_via => 'Number',
+	handles => {
+		_next_transition_counter => [ add => 1 ],
+	},
 );
 
 sub _t {
@@ -53,8 +66,9 @@ sub _t {
 		if $existing_to_for_event;
 
 	$sm->{ $from }{ $to } = {
-		event => $event,
+		event  => $event,
 		action => ref $action ? $action : [ $action ],
+		id     => $self->_next_transition_counter,
 	};
 }
 
