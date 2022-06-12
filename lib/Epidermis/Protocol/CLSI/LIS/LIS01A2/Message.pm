@@ -3,7 +3,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Message;
 
 use Moo;
 use namespace::autoclean;
-use MooX::HandlesVia;
+use Sub::HandlesVia;
 
 use Epidermis::Protocol::CLSI::LIS::Types qw(FrameNumber);
 use Types::Standard qw(ArrayRef InstanceOf);
