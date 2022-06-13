@@ -93,6 +93,20 @@ before setup => sub {
 	$test_conn->init;
 };
 
+requires 'simulator_events';
+
+lazy simulator_process_events_future => sub {
+	my ($self) = @_;
+
+	my @events = @{ $self->simulator_events };
+	my $sim    = $self->simulator;
+
+	my $sim_process_events_f = repeat {
+		my ($event_name, $data) = @{ shift @_ };
+		$sim->process_event( $event_name, $data );
+	} foreach => \@events;
+};
+
 test "Simulate" => sub {
 	my $self = shift;
 	Log::Any::Adapter->set( {
@@ -106,15 +120,6 @@ test "Simulate" => sub {
 	my $sim = $self->simulator;
 
 	$sess->send_message( LIS01A2::Message->create_message( 'Hello world' ) );
-
-	my @events = (
-		[ 'sim-step-n', 4 ],
-	);
-
-	my $sim_process_events_f = repeat {
-		my ($event_name, $data) = @{ shift @_ };
-		$sim->process_event( $event_name, $data );
-	} foreach => \@events;
 
 	my $timer = IO::Async::Timer::Periodic->new(
 		interval => 1,
@@ -130,7 +135,7 @@ test "Simulate" => sub {
 	$loop->later(sub {
 		$loop->await_all(
 			$sess->process_until_idle,
-			$sim_process_events_f,
+			$self->simulator_process_events_future,
 		);
 		$loop->stop;
 	});
