@@ -25,7 +25,7 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Message';
 use feature qw(state);
 use IO::Async::Timer::Periodic;
-use Future::Utils qw(repeat);
+use Future::Utils qw(repeat try_repeat);
 use Log::Any::Adapter;
 use Log::Any::Adapter::Screen ();
 
@@ -71,7 +71,7 @@ ro client_transitions => (
 lazy simulator => sub {
 	my ($self) = @_;
 	my $sim  = Simulator->new(
-		session => Session->new(
+		session => Client->new(
 			connection => $self->connection->connection1,
 			session_system => SYSTEM_INSTRUMENT,
 			name => 'sim',
@@ -93,19 +93,37 @@ before setup => sub {
 	$test_conn->init;
 };
 
-requires 'simulator_events';
+requires 'client_steps';
+requires 'simulator_steps';
 
-lazy simulator_process_events_future => sub {
-	my ($self) = @_;
+sub driver {
+	my ($self, $session, $events) = @_;
+	my ($last_idx, $last_event, @last_data);
+	my $sim_process_events_f = try_repeat {
+		my $idx = shift;
+		my ($state, $event_name, @data) = @{ $events->[$idx] };
 
-	my @events = @{ $self->simulator_events };
-	my $sim    = $self->simulator;
+		if( $session->session_state eq $state ) {
+			$last_event = $event_name;
+			@last_data  = @data;
+		}
 
-	my $sim_process_events_f = repeat {
-		my ($event_name, $data) = @{ shift @_ };
-		$sim->process_event( $event_name, $data );
-	} foreach => \@events;
-};
+		if( $last_event eq 'step-until-idle' ) {
+			print "[Process @{[ $session->name ]} until idle", "]\n";
+			$session->_process_until_state( STATE_N_IDLE );
+		} elsif( $last_event eq 'step' ) {
+			print "[Process @{[ $session->name ]} until ", $events->[$idx + 1][0], "]\n";
+			$session->_process_until_state( $events->[$idx + 1][0]);
+		} elsif( $last_event eq 'sleep' ) {
+			print "[sleep for ", $last_data[0], "]\n";
+			Future::IO->sleep($last_data[0]);
+		} elsif( $last_event eq 'send-message' ) {
+			print "[send message ", $last_data[0], "]\n";
+			$session->send_message( $last_data[0] );
+			Future->done;
+		}
+	} foreach => [ 0..@$events-1 ];
+}
 
 test "Simulate" => sub {
 	my $self = shift;
@@ -118,8 +136,6 @@ test "Simulate" => sub {
 	my $loop = $self->loop;
 	my $sess = $self->client;
 	my $sim = $self->simulator;
-
-	$sess->send_message( LIS01A2::Message->create_message( 'Hello world' ) );
 
 	my $timer = IO::Async::Timer::Periodic->new(
 		interval => 1,
@@ -134,8 +150,8 @@ test "Simulate" => sub {
 	});
 	$loop->later(sub {
 		$loop->await_all(
-			$sess->process_until_idle,
-			$self->simulator_process_events_future,
+			$self->driver( $sess, $self->client_steps ),
+			$self->driver( $self->simulator->session, $self->simulator_steps ),
 		);
 		$loop->stop;
 	});
