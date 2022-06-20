@@ -18,6 +18,7 @@ use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Simulator';
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Client';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Process::StepEventEmitter' => 'Process::StepEventEmitter';
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Drivable' => 'Drivable';
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_system :enum_state :enum_event);
@@ -25,7 +26,6 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Message';
 use feature qw(state);
 use IO::Async::Timer::Periodic;
-use Future::Utils qw(repeat try_repeat);
 use Log::Any::Adapter;
 use Log::Any::Adapter::Screen ();
 
@@ -39,11 +39,12 @@ lazy connection => sub {
 
 lazy client => sub {
 	my ($self) = @_;
-	my $client_class = Moo::Role->create_class_with_roles(Client, Process::StepEventEmitter);
+	my $client_class = Moo::Role->create_class_with_roles(Client, Process::StepEventEmitter, Drivable);
 	my $sess = $client_class->new(
 		connection => $self->connection->connection0,
 		session_system => SYSTEM_COMPUTER,
 		name => 'cli',
+		commands => $self->client_steps,
 	);
 
 	my $step_count = 0;
@@ -70,11 +71,13 @@ ro client_transitions => (
 
 lazy simulator => sub {
 	my ($self) = @_;
+	my $client_class = Moo::Role->create_class_with_roles(Client, Drivable);
 	my $sim  = Simulator->new(
-		session => Client->new(
+		session => $client_class->new(
 			connection => $self->connection->connection1,
 			session_system => SYSTEM_INSTRUMENT,
 			name => 'sim',
+			commands => $self->simulator_steps,
 		)
 	);
 	$sim;
@@ -95,42 +98,6 @@ before setup => sub {
 
 requires 'client_steps';
 requires 'simulator_steps';
-
-use Const::Exporter default => [
-	CMD_STEP_UNTIL_IDLE => 'step-until-idle',
-	CMD_STEP_UNTIL     => 'step',
-	CMD_SLEEP          => 'sleep',
-	CMD_SEND_MSG       => 'send-message',
-];
-
-sub driver {
-	my ($self, $session, $events) = @_;
-	my ($last_idx, $last_event, @last_data);
-	my $sim_process_events_f = try_repeat {
-		my $idx = shift;
-		my ($state, $event_name, @data) = @{ $events->[$idx] };
-
-		if( $session->session_state eq $state ) {
-			$last_event = $event_name;
-			@last_data  = @data;
-		}
-
-		if( $last_event eq CMD_STEP_UNTIL_IDLE ) {
-			print "[Process @{[ $session->name ]} until idle", "]\n";
-			$session->_process_until_state( STATE_N_IDLE );
-		} elsif( $last_event eq CMD_STEP_UNTIL ) {
-			print "[Process @{[ $session->name ]} until ", $events->[$idx + 1][0], "]\n";
-			$session->_process_until_state( $events->[$idx + 1][0]);
-		} elsif( $last_event eq CMD_SLEEP ) {
-			print "[sleep for ", $last_data[0], "]\n";
-			Future::IO->sleep($last_data[0]);
-		} elsif( $last_event eq CMD_SEND_MSG ) {
-			print "[send message ", $last_data[0], "]\n";
-			$session->send_message( $last_data[0] );
-			Future->done;
-		}
-	} foreach => [ 0..@$events-1 ];
-}
 
 test "Simulate" => sub {
 	my $self = shift;
@@ -157,8 +124,8 @@ test "Simulate" => sub {
 	});
 	$loop->later(sub {
 		$loop->await_all(
-			$self->driver( $sess, $self->client_steps ),
-			$self->driver( $self->simulator->session, $self->simulator_steps ),
+			$sess->process_commands,
+			$self->simulator->session->process_commands,
 		);
 		$loop->stop;
 	});

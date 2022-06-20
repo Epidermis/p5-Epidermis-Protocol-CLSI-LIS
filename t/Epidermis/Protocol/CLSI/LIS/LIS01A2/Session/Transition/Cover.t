@@ -9,6 +9,7 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_state);
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Message';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::TimerFactory';
+use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::Commands;
 
 lazy client_steps => sub {
 	[
