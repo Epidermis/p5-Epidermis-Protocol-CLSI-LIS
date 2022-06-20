@@ -12,16 +12,16 @@ use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::TimerFactory';
 
 lazy client_steps => sub {
 	[
-		[ STATE_N_IDLE , 'send-message'  , LIS01A2::Message->create_message( 'Hello world' ) ],
-		[ STATE_N_IDLE , 'step-until-idle' ],
+		[ STATE_N_IDLE , CMD_SEND_MSG()  , LIS01A2::Message->create_message( 'Hello world' ) ],
+		[ STATE_N_IDLE , CMD_STEP_UNTIL_IDLE() ],
 	]
 };
 
 lazy simulator_steps => sub {
 	[
-		[ STATE_N_IDLE , 'step' ],
-		[ STATE_R_GOOD_FRAME, 'sleep', TimerFactory->new->duration_sender + 1 ],
-		[ STATE_R_GOOD_FRAME , 'step-until-idle' ],
+		[ STATE_N_IDLE , CMD_STEP_UNTIL() ],
+		[ STATE_R_GOOD_FRAME, CMD_SLEEP(), TimerFactory->new->duration_sender + 1 ],
+		[ STATE_R_GOOD_FRAME , CMD_STEP_UNTIL_IDLE() ],
 	]
 };
 

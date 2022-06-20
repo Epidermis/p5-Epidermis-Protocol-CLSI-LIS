@@ -96,6 +96,13 @@ before setup => sub {
 requires 'client_steps';
 requires 'simulator_steps';
 
+use Const::Exporter default => [
+	CMD_STEP_UNTIL_IDLE => 'step-until-idle',
+	CMD_STEP_UNTIL     => 'step',
+	CMD_SLEEP          => 'sleep',
+	CMD_SEND_MSG       => 'send-message',
+];
+
 sub driver {
 	my ($self, $session, $events) = @_;
 	my ($last_idx, $last_event, @last_data);
@@ -108,16 +115,16 @@ sub driver {
 			@last_data  = @data;
 		}
 
-		if( $last_event eq 'step-until-idle' ) {
+		if( $last_event eq CMD_STEP_UNTIL_IDLE ) {
 			print "[Process @{[ $session->name ]} until idle", "]\n";
 			$session->_process_until_state( STATE_N_IDLE );
-		} elsif( $last_event eq 'step' ) {
+		} elsif( $last_event eq CMD_STEP_UNTIL ) {
 			print "[Process @{[ $session->name ]} until ", $events->[$idx + 1][0], "]\n";
 			$session->_process_until_state( $events->[$idx + 1][0]);
-		} elsif( $last_event eq 'sleep' ) {
+		} elsif( $last_event eq CMD_SLEEP ) {
 			print "[sleep for ", $last_data[0], "]\n";
 			Future::IO->sleep($last_data[0]);
-		} elsif( $last_event eq 'send-message' ) {
+		} elsif( $last_event eq CMD_SEND_MSG ) {
 			print "[send message ", $last_data[0], "]\n";
 			$session->send_message( $last_data[0] );
 			Future->done;
