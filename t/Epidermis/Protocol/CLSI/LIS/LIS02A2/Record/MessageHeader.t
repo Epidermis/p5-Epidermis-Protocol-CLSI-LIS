@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
-use Test::Most tests => 1;
+use Test2::V0;
+plan tests => 1;
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS02A2::Record::MessageHeader';
 
@@ -32,17 +33,17 @@ subtest "Create message header" => sub {
 			is $header->delimiter_definition, q{ZbcdZ}, 'ArrayRef of 4 characters';
 		}
 
-		throws_ok {
+		like dies {
 			my $header = MessageHeader->new( delimiter_definition => [ qw(Z b c b) ] );
-		} qr/InvalidDelimiterSpec.*unique/, 'Separators not unique';
+		}, qr/InvalidDelimiterSpec.*unique/, 'Separators not unique';
 
-		throws_ok {
+		like dies {
 			my $header = MessageHeader->new( delimiter_definition => [ qw(Z b c d e) ] );
-		} qr/InvalidDelimiterSpec/, 'ArrayRef too long';
+		}, qr/InvalidDelimiterSpec/, 'ArrayRef too long';
 
-		throws_ok {
+		like dies {
 			my $header = MessageHeader->new( delimiter_definition => [ qw(Zed b c d) ] );
-		} qr/InvalidDelimiterSpec/, 'Separator not a single character';
+		}, qr/InvalidDelimiterSpec/, 'Separator not a single character';
 	};
 };
 

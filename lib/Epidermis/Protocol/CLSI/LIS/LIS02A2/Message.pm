@@ -3,7 +3,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS02A2::Message;
 
 use Moo;
 use namespace::autoclean;
-use MooX::HandlesVia;
+use Sub::HandlesVia;
 
 use Types::Standard qw(ArrayRef ConsumerOf);
 

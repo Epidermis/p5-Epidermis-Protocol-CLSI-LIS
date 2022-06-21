@@ -1,12 +1,14 @@
 #!/usr/bin/env perl
 
-use Test::Most tests => 2;
+use Test2::V0;
+plan tests => 2;
 
 use lib 't/lib';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::StateMachine';
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_state :enum_event :enum_action);
 use IPC::Run qw(run);
+use File::Which;
 use List::AllUtils;
 
 sub render_plantuml_to_text {
@@ -26,15 +28,23 @@ sub render_plantuml_to_png {
 }
 
 sub show_plantuml {
-	my ($sm) = @_;
+	my ($sm, %opt) = @_;
+
+	if(!%opt) {
+		$opt{text} = 1;
+	}
 
 	my $plantuml = $sm->to_plantuml;
-	print $plantuml;
+	note "PlantUML:\n\n", $plantuml;
 
-	my $txt_out = render_plantuml_to_text($plantuml);
-	print $txt_out;
+	return unless which('plantuml');
 
-	if( 0 ) {
+	if( $opt{text} ) {
+		my $txt_out = render_plantuml_to_text($plantuml);
+		print $txt_out;
+	}
+
+	if( $opt{png} && which('display') ) {
 		my $png_out = render_plantuml_to_png($plantuml);
 		run [ qw(display -) ], \$png_out;
 	}
@@ -42,7 +52,8 @@ sub show_plantuml {
 
 subtest "Create state machine" => sub {
 	my $sm = StateMachine->new;
-	ok( $sm );
+	ok $sm;
+	show_plantuml($sm, text => 0, png => 0 );
 };
 
 subtest "Check state machine transitions: actions" => sub {

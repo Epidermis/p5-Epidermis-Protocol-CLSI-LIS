@@ -19,10 +19,10 @@ use Future::AsyncAwait;
 
 use MooX::Struct -retain,
 StateTransition => [
-	qw( from transition to ),
+	qw( id from transition to ),
 	TO_STRING => sub {
 		my ($self) = @_;
-		"[ @{[ $self->from ]} ] -- @{[ $self->transition ]} --> [ @{[ $self->to ]} ]"
+		"[@{[ $self->id ]}: @{[ $self->from ]} ] -- @{[ $self->transition ]} --> [ @{[ $self->to ]} ]"
 	}
 ];
 our $StateTransition = StateTransition;
@@ -83,6 +83,7 @@ async sub step {
 	await $actions_done->followed_by( sub { $self->_reset_after_step; Future->done->set_label('reset after step') } );
 
 	return StateTransition[
+		$transition_data->{id},
 		$from,
 		$transition_event,
 		$transition_data->{to}

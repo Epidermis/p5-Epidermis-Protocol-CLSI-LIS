@@ -3,7 +3,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::DataTransfer;
 
 use Mu::Role;
 use namespace::autoclean;
-use MooX::HandlesVia;
+use Sub::HandlesVia;
 use MooX::Should;
 
 use Data::Hexdumper ();
