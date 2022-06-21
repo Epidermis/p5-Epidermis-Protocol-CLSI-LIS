@@ -8,7 +8,7 @@ use MooX::Should;
 use Future::AsyncAwait;
 use Future::Utils qw(repeat try_repeat);
 
-use Types::Standard  qw(InstanceOf ArrayRef);
+use Types::Standard  qw(ConsumerOf ArrayRef);
 use Types::Common::Numeric qw(PositiveInt);
 
 use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS_DEBUG);
@@ -24,8 +24,13 @@ use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Drivable';
 with qw( MooX::Role::Logger );
 
 ro session =>  (
-	should => InstanceOf['Epidermis::Protocol::CLSI::LIS::LIS01A2::Session'],
+	should => ConsumerOf[Drivable],
 	required => 1,
+	coerce   => sub {
+		if( ! $_[0]->DOES(Drivable) ) {
+			Moo::Role->apply_roles_to_object( $_[0], Drivable);
+		}
+	},
 );
 
 ro commands => (
@@ -38,10 +43,6 @@ ro transitions => (
 
 sub BUILD {
 	my ($self) = @_;
-	if( ! $self->session->DOES(Drivable) ) {
-		Moo::Role->apply_roles_to_object( $self->session, Drivable);
-	}
-
 	my $step_count = 0;
 	my $log = $self->_logger;
 	$self->session->on( step => sub {
