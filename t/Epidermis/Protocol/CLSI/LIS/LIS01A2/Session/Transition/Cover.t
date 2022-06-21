@@ -11,14 +11,14 @@ use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Mess
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::TimerFactory';
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::Commands;
 
-lazy client_steps => sub {
+lazy local_steps => sub {
 	[
 		[ STATE_N_IDLE , CMD_SEND_MSG()  , LIS01A2::Message->create_message( 'Hello world' ) ],
 		[ STATE_N_IDLE , CMD_STEP_UNTIL_IDLE() ],
 	]
 };
 
-lazy simulator_steps => sub {
+lazy remote_steps => sub {
 	[
 		[ STATE_N_IDLE , CMD_STEP_UNTIL() ],
 		[ STATE_R_GOOD_FRAME, CMD_SLEEP(), TimerFactory->new->duration_sender + 1 ],
