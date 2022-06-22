@@ -24,6 +24,8 @@ use IO::Async::Timer::Periodic;
 use Log::Any::Adapter;
 use Log::Any::Adapter::Screen ();
 
+use Log::Any qw($log);
+
 lazy loop => sub {
 	my $loop = IO::Async::Loop->new;
 };
@@ -76,7 +78,7 @@ test "Simulate" => sub {
 	my $self = shift;
 	Log::Any::Adapter->set( {
 		lexically => \my $lex,
-		#category => qr/^main$|^Epidermis::Protocol::CLSI::LIS::LIS01A2::Client/
+		#category => qr/^main$|^Epidermis::Protocol::CLSI::LIS::LIS01A2::Session/
 		},
 		'Screen', min_level => 'trace', formatter => sub { $_[1] =~ s/^/  # LOG: /mgr } ) if $ENV{TEST_VERBOSE};
 
@@ -86,7 +88,8 @@ test "Simulate" => sub {
 		interval => 1,
 		on_tick => sub {
 			state $tick = 0;
-			print "Timer: @{[ ++$tick ]}\n";
+			$log->tracef("Timer: %d", ++$tick)
+				 if $log->is_trace;
 		},
 	);
 	$loop->later(sub {
@@ -102,9 +105,6 @@ test "Simulate" => sub {
 	});
 
 	$loop->run;
-
-	is $self->local->transitions->[-1]->transition, EV_TIMED_OUT, 'timed out';
-	is $self->local->transitions->[-1]->to, STATE_N_IDLE, 'idle';
 };
 
 1;

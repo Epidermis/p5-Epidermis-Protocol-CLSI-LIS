@@ -8,7 +8,7 @@ use MooX::Should;
 use Future::AsyncAwait;
 use Future::Utils qw(repeat try_repeat);
 
-use Types::Standard  qw(InstanceOf ArrayRef);
+use Types::Standard  qw(ConsumerOf ArrayRef);
 use Types::Common::Numeric qw(PositiveInt);
 
 use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS_DEBUG);
@@ -24,8 +24,13 @@ use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Drivable';
 with qw( MooX::Role::Logger );
 
 ro session =>  (
-	should => InstanceOf['Epidermis::Protocol::CLSI::LIS::LIS01A2::Session'],
+	should => ConsumerOf[Drivable],
 	required => 1,
+	coerce   => sub {
+		if( ! $_[0]->DOES(Drivable) ) {
+			Moo::Role->apply_roles_to_object( $_[0], Drivable);
+		}
+	},
 );
 
 ro commands => (
@@ -36,12 +41,8 @@ ro transitions => (
 	default => sub { [] },
 );
 
-sub BUILD {
+sub _apply_logger {
 	my ($self) = @_;
-	if( ! $self->session->DOES(Drivable) ) {
-		Moo::Role->apply_roles_to_object( $self->session, Drivable);
-	}
-
 	my $step_count = 0;
 	my $log = $self->_logger;
 	$self->session->on( step => sub {
@@ -54,39 +55,40 @@ sub BUILD {
 			$event->state_transition,
 			$event->emitter,
 		);
+	});
+}
+
+sub _apply_transition_tracking {
+	my ($self) = @_;
+	$self->session->on( step => sub {
+		my ($event) = @_;
 		push @{ $self->transitions }, $event->state_transition;
 	});
+}
+
+sub BUILD {
+	my ($self) = @_;
+	$self->_apply_logger;
+	$self->_apply_transition_tracking;
 }
 
 sub process_commands {
 	my ($self) = @_;
 	my $session = $self->session;
 	my $events = $self->commands;
-	my ($last_idx, $last_event, @last_data);
-	my $sim_process_events_f = try_repeat {
-		my $idx = shift;
-		my ($state, $event_name, @data) = @{ $events->[$idx] };
-
+	my $sim_process_events_f = repeat {
+		my $event = shift;
+		my ($state, $event_command) = @$event;
 		if( $session->session_state eq $state ) {
-			$last_event = $event_name;
-			@last_data  = @data;
+			$self->_logger->tracef( "[ %s | %s ]",
+				$self->session->name,
+				$event_command->description
+			);
+			$event_command->run($self, $session);
+		} else {
+			Future->die( "unexpected state" );
 		}
-
-		if( $last_event eq CMD_STEP_UNTIL_IDLE ) {
-			print "[Process @{[ $session->name ]} until idle", "]\n";
-			$session->_process_until_state( STATE_N_IDLE );
-		} elsif( $last_event eq CMD_STEP_UNTIL ) {
-			print "[Process @{[ $session->name ]} until ", $events->[$idx + 1][0], "]\n";
-			$session->_process_until_state( $events->[$idx + 1][0]);
-		} elsif( $last_event eq CMD_SLEEP ) {
-			print "[sleep for ", $last_data[0], "]\n";
-			Future::IO->sleep($last_data[0]);
-		} elsif( $last_event eq CMD_SEND_MSG ) {
-			print "[send message ", $last_data[0], "]\n";
-			$session->send_message( $last_data[0] );
-			Future->done;
-		}
-	} foreach => [ 0..@$events-1 ];
+	} foreach => $events;
 }
 
 1;
