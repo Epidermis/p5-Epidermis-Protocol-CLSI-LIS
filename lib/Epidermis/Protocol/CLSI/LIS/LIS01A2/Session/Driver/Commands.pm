@@ -6,11 +6,13 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 
 use Module::Load;
 
+use Log::Any qw($log);
+
 use Exporter 'import';
 our @EXPORT = qw(
 	StepUntilIdle
 	StepUntil
-	Sleep
+	SleepPlus
 	SendMsg
 	TestTransition
 );
@@ -44,13 +46,24 @@ sub StepUntil {
 	);
 }
 
-sub Sleep {
-	my ($duration) = @_;
+sub SleepPlus {
+	my ($duration_name, $add) = @_;
+	$add = 1 unless defined $add;
 	Command->new(
-		description => "Sleep for $duration seconds",
+		description => "Sleep for duration $duration_name plus $add second(s)",
 		code => sub {
 			my ($self, $simulator, $session) = @_;
-			Future::IO->sleep($duration);
+			my $duration_method = "duration_$duration_name";
+			my $tf = $session->_timer_factory;
+			if( my $meth = $tf->can($duration_method) ) {
+				my $duration = $meth->($tf);
+				my $sleep_for = $duration + $add;
+				$log->tracef("Sleeping for %f second(s)", $sleep_for)
+					if $log->is_trace;
+				return Future::IO->sleep($sleep_for);
+			} else {
+				return Future->die( "unknown duration $duration_method" );
+			}
 		},
 	);
 }
