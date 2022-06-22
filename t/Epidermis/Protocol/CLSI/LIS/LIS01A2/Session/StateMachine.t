@@ -41,7 +41,7 @@ sub show_plantuml {
 
 	if( $opt{text} ) {
 		my $txt_out = render_plantuml_to_text($plantuml);
-		print $txt_out;
+		note $txt_out;
 	}
 
 	if( $opt{png} && which('display') ) {

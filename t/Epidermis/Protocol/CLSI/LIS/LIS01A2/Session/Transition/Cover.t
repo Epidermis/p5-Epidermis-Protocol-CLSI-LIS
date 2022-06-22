@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-package MyTest;
+package Test::SM::SenderTimesOut;
 use lib 't/lib';
 use Test2::Roo;
 use MooX::ShortHas;
