@@ -4,9 +4,9 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Processable;
 use Mu::Role;
 use namespace::autoclean;
 
+use Devel::StrictMode;
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_state);
-
 use Types::Standard qw(Enum);
 
 use Future::AsyncAwait;
@@ -22,7 +22,7 @@ sub process_step {
 my $EnumState = Enum[ @ENUM_STATE ];
 async sub _process_until_state {
 	my ($self, $state) = @_;
-	$EnumState->assert_valid( $state );
+	$EnumState->assert_valid( $state ) if STRICT;
 
 	my $r_f = repeat {
 		my $f = $self->process_step

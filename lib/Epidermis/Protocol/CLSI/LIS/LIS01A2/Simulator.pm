@@ -76,31 +76,19 @@ sub process_commands {
 	my ($self) = @_;
 	my $session = $self->session;
 	my $events = $self->commands;
-	my ($last_idx, $last_event, @last_data);
-	my $sim_process_events_f = try_repeat {
-		my $idx = shift;
-		my ($state, $event_name, @data) = @{ $events->[$idx] };
-
+	my $sim_process_events_f = repeat {
+		my $event = shift;
+		my ($state, $event_command) = @$event;
 		if( $session->session_state eq $state ) {
-			$last_event = $event_name;
-			@last_data  = @data;
+			$self->_logger->tracef( "[ %s | %s ]",
+				$self->session->name,
+				$event_command->description
+			);
+			$event_command->run($self, $session);
+		} else {
+			Future->die( "unexpected state" );
 		}
-
-		if( $last_event eq CMD_STEP_UNTIL_IDLE ) {
-			print "[Process @{[ $session->name ]} until idle", "]\n";
-			$session->_process_until_state( STATE_N_IDLE );
-		} elsif( $last_event eq CMD_STEP_UNTIL ) {
-			print "[Process @{[ $session->name ]} until ", $events->[$idx + 1][0], "]\n";
-			$session->_process_until_state( $events->[$idx + 1][0]);
-		} elsif( $last_event eq CMD_SLEEP ) {
-			print "[sleep for ", $last_data[0], "]\n";
-			Future::IO->sleep($last_data[0]);
-		} elsif( $last_event eq CMD_SEND_MSG ) {
-			print "[send message ", $last_data[0], "]\n";
-			$session->send_message( $last_data[0] );
-			Future->done;
-		}
-	} foreach => [ 0..@$events-1 ];
+	} foreach => $events;
 }
 
 1;
