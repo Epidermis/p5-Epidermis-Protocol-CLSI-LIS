@@ -41,7 +41,7 @@ ro transitions => (
 	default => sub { [] },
 );
 
-sub BUILD {
+sub _apply_logger {
 	my ($self) = @_;
 	my $step_count = 0;
 	my $log = $self->_logger;
@@ -55,8 +55,21 @@ sub BUILD {
 			$event->state_transition,
 			$event->emitter,
 		);
+	});
+}
+
+sub _apply_transition_tracking {
+	my ($self) = @_;
+	$self->session->on( step => sub {
+		my ($event) = @_;
 		push @{ $self->transitions }, $event->state_transition;
 	});
+}
+
+sub BUILD {
+	my ($self) = @_;
+	$self->_apply_logger;
+	$self->_apply_transition_tracking;
 }
 
 sub process_commands {
