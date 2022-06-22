@@ -12,6 +12,7 @@ use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::TimerFactory';
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::Commands;
 
 lazy local_steps => sub {
+	my ($self) = @_;
 	[
 		[ STATE_N_IDLE , SendMsg( LIS01A2::Message->create_message( 'Hello world' ) ) ],
 		[ STATE_N_IDLE , StepUntilIdle() ],
@@ -20,9 +21,10 @@ lazy local_steps => sub {
 };
 
 lazy remote_steps => sub {
+	my ($self) = @_;
 	[
 		[ STATE_N_IDLE , StepUntil(STATE_R_GOOD_FRAME) ],
-		[ STATE_R_GOOD_FRAME, Sleep(TimerFactory->new->duration_sender + 1) ],
+		[ STATE_R_GOOD_FRAME, Sleep($self->timer_factory->duration_sender + 1) ],
 		[ STATE_R_GOOD_FRAME , StepUntilIdle() ],
 	]
 };
