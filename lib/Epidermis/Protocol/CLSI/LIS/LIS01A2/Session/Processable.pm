@@ -7,6 +7,8 @@ use namespace::autoclean;
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_state);
 
+use Types::Standard qw(Enum);
+
 use Future::AsyncAwait;
 use Future::Utils qw(repeat);
 
@@ -17,8 +19,10 @@ sub process_step {
 	$self->step;
 }
 
+my $EnumState = Enum[ @ENUM_STATE ];
 async sub _process_until_state {
 	my ($self, $state) = @_;
+	$EnumState->assert_valid( $state );
 
 	my $r_f = repeat {
 		my $f = $self->process_step
