@@ -6,10 +6,10 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 
 use Exporter 'import';
 our @EXPORT = qw(
-	CMD_STEP_UNTIL_IDLE
-	CMD_STEP_UNTIL
-	CMD_SLEEP
-	CMD_SEND_MSG
+	StepUntilIdle
+	StepUntil
+	Sleep
+	SendMsg
 );
 
 use MooX::Struct Command => [
@@ -20,7 +20,7 @@ use MooX::Struct Command => [
 	},
 ];
 
-sub CMD_STEP_UNTIL_IDLE {
+sub StepUntilIdle {
 	Command->new(
 		description => 'Process events until idle',
 		code => sub {
@@ -30,7 +30,7 @@ sub CMD_STEP_UNTIL_IDLE {
 	);
 }
 
-sub CMD_STEP_UNTIL {
+sub StepUntil {
 	my ($state) = @_;
 	Command->new(
 		description => "Process events until $state",
@@ -41,7 +41,7 @@ sub CMD_STEP_UNTIL {
 	);
 }
 
-sub CMD_SLEEP {
+sub Sleep {
 	my ($duration) = @_;
 	Command->new(
 		description => "Sleep for $duration seconds",
@@ -52,7 +52,7 @@ sub CMD_SLEEP {
 	);
 }
 
-sub CMD_SEND_MSG {
+sub SendMsg {
 	my ($message) = @_;
 	Command->new(
 		description => "Send message $message",
