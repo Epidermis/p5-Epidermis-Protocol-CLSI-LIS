@@ -4,12 +4,15 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::Commands;
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_state);
 
+use Module::Load;
+
 use Exporter 'import';
 our @EXPORT = qw(
 	StepUntilIdle
 	StepUntil
 	Sleep
 	SendMsg
+	TestTransition
 );
 
 use MooX::Struct Command => [
@@ -60,6 +63,20 @@ sub SendMsg {
 			my ($self, $simulator, $session) = @_;
 			$session->send_message( $message );
 			Future->done;
+		},
+	);
+}
+
+sub TestTransition {
+	my ($event) = @_;
+	Command->new(
+		description => "Test that the last transition was $event",
+		code => sub {
+			my ($self, $simulator, $session) = @_;
+			load Test2::V0, qw/is/;
+			Future->done(
+				is($simulator->transitions->[-1]->transition, $event, "Transition $event")
+			);
 		},
 	);
 }

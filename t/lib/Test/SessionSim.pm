@@ -102,9 +102,6 @@ test "Simulate" => sub {
 	});
 
 	$loop->run;
-
-	is $self->local->transitions->[-1]->transition, EV_TIMED_OUT, 'timed out';
-	is $self->local->transitions->[-1]->to, STATE_N_IDLE, 'idle';
 };
 
 1;
