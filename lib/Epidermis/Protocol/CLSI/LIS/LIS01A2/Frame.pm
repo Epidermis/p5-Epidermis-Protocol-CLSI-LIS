@@ -21,10 +21,8 @@ use Epidermis::Protocol::CLSI::LIS::Constants qw(
 	CR LF
 );
 
-use constant {
-	FRAME_TYPE_INTERMEDIATE => 'intermediate',
-	FRAME_TYPE_END => 'end',
-};
+use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame::Constants
+	qw(:frame_type);
 
 use Const::Fast;
 
