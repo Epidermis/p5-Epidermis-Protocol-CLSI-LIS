@@ -67,8 +67,15 @@ has frame_number => (
 
 lazy next_frame_number => sub {
 	my ($self) = @_;
-	($self->frame_number + 1) % 8;
+	$self->_compute_next_frame_number(
+		$self->frame_number
+	);
 };
+
+sub _compute_next_frame_number {
+	my ($class, $frame_number) = @_;
+	($frame_number + 1) % 8;
+}
 
 =attr content
 
