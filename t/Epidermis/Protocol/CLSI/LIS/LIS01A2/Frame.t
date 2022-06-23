@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
 
 use Test2::V0;
-plan tests => 5;
+plan tests => 6;
 
-use Epidermis::Protocol::CLSI::LIS::Constants qw(STX ETX ETB);
+use Epidermis::Protocol::CLSI::LIS::Constants qw(STX ETX ETB CR LF);
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame';
 
 use Data::Hexdumper ();
@@ -40,6 +40,19 @@ subtest "Check frame creation" => sub {
 
 	is Frame->new( content => "A|B|C|D\x0d" )->checksum,
 		'BF', 'Got checksum';
+};
+
+subtest "Parse good frame data" => sub {
+	# Example frame via <https://hendricksongroup.com/code_003.aspx>
+	my $frame = Frame->parse_frame_data( join "", (
+		STX,
+		"5R|2|^^^1.0000+950+1.0|15|||^5^||V||34001637|20080516153540|20080516153602|34001637\x0d",
+		ETX,
+		'3D', # checksum
+		CR, LF
+	));
+	ok $frame->is_end, 'parsed end frame';
+	is $frame->checksum, '3D', 'checksum';
 };
 
 subtest "Parsing error detection" => sub {
