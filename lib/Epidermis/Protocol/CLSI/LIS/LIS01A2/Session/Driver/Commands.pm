@@ -14,8 +14,11 @@ our @EXPORT = qw(
 	StepUntil
 	SleepPlus
 	SendMsg
+	SendMsgWithSingleFrame
 	TestTransition
 );
+
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Message';
 
 use MooX::Struct Command => [
 	qw( description code ),
@@ -72,6 +75,18 @@ sub SendMsg {
 	my ($message) = @_;
 	Command->new(
 		description => "Send message $message",
+		code => sub {
+			my ($self, $simulator, $session) = @_;
+			$session->send_message( $message );
+			Future->done;
+		},
+	);
+}
+
+sub SendMsgWithSingleFrame {
+	my $message = LIS01A2::Message->create_message( 'Hello world' );
+	Command->new(
+		description => "Send single frame message",
 		code => sub {
 			my ($self, $simulator, $session) = @_;
 			$session->send_message( $message );
