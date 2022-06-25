@@ -15,10 +15,11 @@ our @EXPORT = qw(
 	SleepPlus
 	SendMsg
 	SendMsgWithSingleFrame
+	SendMsgWithMultipleFrames
 	TestTransition
 );
 
-use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Message';
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::TestMessages';
 
 use MooX::Struct Command => [
 	qw( description code ),
@@ -84,14 +85,20 @@ sub SendMsg {
 }
 
 sub SendMsgWithSingleFrame {
-	my $message = LIS01A2::Message->create_message( 'Hello world' );
+	my $message = TestMessages->new->single_frame;
 	Command->new(
 		description => "Send single frame message",
-		code => sub {
-			my ($self, $simulator, $session) = @_;
-			$session->send_message( $message );
-			Future->done;
-		},
+		code => SendMsg( $message )->code,
+	);
+}
+
+sub SendMsgWithMultipleFrames {
+	my ($count) = @_;
+	$count = 1 unless defined $count;
+	my $message = TestMessages->new->multiple_frames($count);
+	Command->new(
+		description => "Send message with $count frames",
+		code => SendMsg( $message )->code,
 	);
 }
 
