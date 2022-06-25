@@ -5,6 +5,8 @@ use strict;
 use warnings;
 use namespace::autoclean;
 
+use Future;
+
 use Types::Standard qw(InstanceOf Str);
 use Epidermis::Protocol::CLSI::LIS::Types qw(FrameNumber);
 
@@ -43,7 +45,7 @@ use MooX::Struct -retain,
 			) ],
 		],
 
-		_frame_index => [ default => sub { 0 } ],
+		_frame_index => [ is => 'rw', default => sub { 0 } ],
 
 		get_current_frame => sub {
 			my ($self) = @_;
