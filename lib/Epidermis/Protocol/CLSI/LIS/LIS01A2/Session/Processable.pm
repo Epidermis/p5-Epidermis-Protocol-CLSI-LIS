@@ -34,7 +34,7 @@ async sub _process_until_state {
 				Future->done;
 			});
 	} until => sub {
-		$self->session_state eq $state
+		$_[0]->is_failed || $self->session_state eq $state
 	};
 
 	await $r_f;
