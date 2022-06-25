@@ -10,6 +10,8 @@ use Types::Standard qw(ArrayRef InstanceOf);
 
 use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS01A2_FIRST_FRAME_NUMBER);
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame';
+use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame::Constants
+	qw(:frame_type);
 
 use constant FRAME_DATA_MAX_LENGTH => 240;
 
@@ -83,7 +85,9 @@ sub create_message {
 		$message->add_frame( my $frame = Frame->new(
 			frame_number => $frame_number,
 			content => $content,
-			type => ( @frame_data ? 'intermediate' : 'end' ),
+			type => ( @frame_data
+				? FRAME_TYPE_INTERMEDIATE
+				: FRAME_TYPE_END ),
 		));
 
 		$frame_number = $frame->next_frame_number;
