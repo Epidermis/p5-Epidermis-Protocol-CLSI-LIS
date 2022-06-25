@@ -12,6 +12,8 @@ use Types::Standard qw(Enum);
 use Future::AsyncAwait;
 use Future::Utils qw(repeat);
 
+use Data::Dumper;
+
 requires qw(session_state step);
 
 sub process_step {
@@ -26,13 +28,13 @@ async sub _process_until_state {
 
 	my $r_f = repeat {
 		my $f = $self->process_step
-			->on_fail(sub {
-				my ($f1) = @_;
-				$self->_logger->trace( $self->_logger_name_prefix . "Failed: " . Dumper($f1) );
+			->else_with_f( sub {
+				my ($f1, $exception) = @_;
+				local $Data::Dumper::Indent = 0;
+				local $Data::Dumper::Terse = 1;
+				$self->_logger->trace( $self->_logger_name_prefix . "Failed: " . Dumper($exception) );
+				return $f1;
 			})
-			->else(sub {
-				Future->done;
-			});
 	} until => sub {
 		$_[0]->is_failed || $self->session_state eq $state
 	};
