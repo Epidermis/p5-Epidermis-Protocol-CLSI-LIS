@@ -96,6 +96,27 @@ sub create_message {
 	return $message;
 }
 
+sub create_message_from_frames {
+	# NOTE used to renumber frames
+	my ($class, $frames, $message_args ) = @_;
+
+	$message_args //= {};
+
+	my $self = $class->new( $message_args );
+	my $frame_num = $self->start_frame_number;
+	for my $frame_idx (0..@$frames-1) {
+		my $frame = Frame->new(
+			frame_number => $frame_num,
+			content => $frames->[$frame_idx]->content,
+			type => $frames->[$frame_idx]->type,
+		);
+		$self->add_frame( $frame );
+		$frame_num = $frame->next_frame_number;
+	}
+
+	return $self;
+}
+
 sub message_data {
 	my ($self) = @_;
 	join "", map { $_->content } @{ $self->frames };

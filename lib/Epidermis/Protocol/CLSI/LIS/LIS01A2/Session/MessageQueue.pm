@@ -32,8 +32,8 @@ use MooX::Struct -retain,
 			isa => InstanceOf['Epidermis::Protocol::CLSI::LIS::LIS01A2::Message'],
 			lazy => 1, default => sub {
 				my ($self) = @_;
-				Epidermis::Protocol::CLSI::LIS::LIS01A2::Message->create_message(
-					$self->message_item->message->message_data,
+				Epidermis::Protocol::CLSI::LIS::LIS01A2::Message->create_message_from_frames(
+					$self->message_item->message->frames,
 					{ start_frame_number => $self->initial_fn },
 				);
 			},
