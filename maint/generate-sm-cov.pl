@@ -20,6 +20,7 @@ sub main {
 		->name( '*.data.pl' )
 		->in( $coverage_dir );
 
+	chmod 0644, @files;
 	symlink_r $skel, $_ for map { $_ =~ s/\Q.data.pl\E$/.t/r } @files;
 }
 
