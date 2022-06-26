@@ -10,14 +10,14 @@ use Future;
 use Types::Standard qw(InstanceOf Str);
 use Epidermis::Protocol::CLSI::LIS::Types qw(FrameNumber);
 
-use Epidermis::Protocol::CLSI::LIS::LIS01A2::Message;
-use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message';
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame';
 
 use MooX::Struct -retain,
 	MessageQueueItem => [
 		message => [
 			required => 1,
-			isa => InstanceOf['Epidermis::Protocol::CLSI::LIS::LIS01A2::Message'],
+			isa => InstanceOf[Message],
 		],
 		future =>  [
 			isa => InstanceOf['Future'],
@@ -31,10 +31,10 @@ use MooX::Struct -retain,
 		message_item => [ isa => MessageQueueItem->TYPE_TINY, required => 1 ],
 		initial_fn => [ isa => FrameNumber, required => 1 ],
 		message => [
-			isa => InstanceOf['Epidermis::Protocol::CLSI::LIS::LIS01A2::Message'],
+			isa => InstanceOf[Message],
 			lazy => 1, default => sub {
 				my ($self) = @_;
-				Epidermis::Protocol::CLSI::LIS::LIS01A2::Message->create_message_from_frames(
+				Message->create_message_from_frames(
 					$self->message_item->message->frames,
 					{ start_frame_number => $self->initial_fn },
 				);
@@ -68,10 +68,10 @@ use MooX::Struct -retain,
 	ReceivableMessage => [
 		initial_fn => [ isa => FrameNumber, required => 1 ],
 		message => [
-			isa => InstanceOf['Epidermis::Protocol::CLSI::LIS::LIS01A2::Message'],
+			isa => InstanceOf[Message],
 			lazy => 1, default => sub {
 				my ($self) = @_;
-				Epidermis::Protocol::CLSI::LIS::LIS01A2::Message->new(
+				Message->new(
 					start_frame_number => $self->initial_fn,
 				);
 			},
@@ -82,7 +82,7 @@ use MooX::Struct -retain,
 		],
 		_current_frame => [
 			is => 'rw',
-			isa => InstanceOf['Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame'],
+			isa => InstanceOf[Frame],
 		],
 
 		set_current_frame_data => sub {
@@ -94,7 +94,7 @@ use MooX::Struct -retain,
 		process_current_frame_data => sub {
 			my ($self) = @_;
 
-			my $frame = Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame->parse_frame_data( $self->_current_frame_data );
+			my $frame = Frame->parse_frame_data( $self->_current_frame_data );
 			$self->message->add_frame( $frame );
 		},
 	];
