@@ -10,6 +10,8 @@ use Types::Standard qw(ArrayRef InstanceOf);
 
 use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS01A2_FIRST_FRAME_NUMBER);
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame';
+use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame::Constants
+	qw(:frame_type);
 
 use constant FRAME_DATA_MAX_LENGTH => 240;
 
@@ -83,13 +85,36 @@ sub create_message {
 		$message->add_frame( my $frame = Frame->new(
 			frame_number => $frame_number,
 			content => $content,
-			type => ( @frame_data ? 'intermediate' : 'end' ),
+			type => ( @frame_data
+				? FRAME_TYPE_INTERMEDIATE
+				: FRAME_TYPE_END ),
 		));
 
 		$frame_number = $frame->next_frame_number;
 	}
 
 	return $message;
+}
+
+sub create_message_from_frames {
+	# NOTE used to renumber frames
+	my ($class, $frames, $message_args ) = @_;
+
+	$message_args //= {};
+
+	my $self = $class->new( $message_args );
+	my $frame_num = $self->start_frame_number;
+	for my $frame_idx (0..@$frames-1) {
+		my $frame = Frame->new(
+			frame_number => $frame_num,
+			content => $frames->[$frame_idx]->content,
+			type => $frames->[$frame_idx]->type,
+		);
+		$self->add_frame( $frame );
+		$frame_num = $frame->next_frame_number;
+	}
+
+	return $self;
 }
 
 sub message_data {

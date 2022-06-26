@@ -1,10 +1,13 @@
 #!/usr/bin/env perl
 
 use Test2::V0;
-plan tests => 4;
+plan tests => 6;
 
-use Epidermis::Protocol::CLSI::LIS::Constants qw(STX);
+use Epidermis::Protocol::CLSI::LIS::Constants qw(STX ETX ETB CR LF);
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame';
+
+use Data::Hexdumper ();
+use boolean;
 
 subtest "Check frame creation" => sub {
 	my $content = "test";
@@ -37,6 +40,19 @@ subtest "Check frame creation" => sub {
 
 	is Frame->new( content => "A|B|C|D\x0d" )->checksum,
 		'BF', 'Got checksum';
+};
+
+subtest "Parse good frame data" => sub {
+	# Example frame via <https://hendricksongroup.com/code_003.aspx>
+	my $frame = Frame->parse_frame_data( join "", (
+		STX,
+		"5R|2|^^^1.0000+950+1.0|15|||^5^||V||34001637|20080516153540|20080516153602|34001637\x0d",
+		ETX,
+		'3D', # checksum
+		CR, LF
+	));
+	ok $frame->is_end, 'parsed end frame';
+	is $frame->checksum, '3D', 'checksum';
 };
 
 subtest "Parsing error detection" => sub {
@@ -113,6 +129,38 @@ subtest "Incorrect frame number" => sub {
 			frame_number => 8,
 		);
 	}, qr/FrameNumber/;
+};
+
+subtest "Frame type" => sub {
+	my $test_text = "test";
+
+	subtest "End frame" => sub {
+		my $end_test_frame = Frame->new(
+			type => 'end',
+			content => $test_text );
+		is substr( $end_test_frame->frame_data, -5, 1 ), ETX,
+			'end frame has ETX';
+		ok Frame->parse_frame_data($end_test_frame->frame_data)
+			->is_end,
+			'end frame round-trips as end frame';
+		note "End frame data: ", Data::Hexdumper::hexdump(
+			data => $end_test_frame->frame_data,
+			suppress_warnings => true );
+	};
+
+	subtest "Intermediate frame" => sub {
+		my $int_test_frame = Frame->new(
+			type => 'intermediate',
+			content => $test_text );
+		is substr( $int_test_frame->frame_data, -5, 1 ), ETB,
+			'intermediate frame has ETB';
+		ok Frame->parse_frame_data($int_test_frame->frame_data)
+			->is_intermediate,
+			'intermediate frame round-trips as intermediate frame';
+		note "Intermediate frame data: ", Data::Hexdumper::hexdump(
+			data => $int_test_frame->frame_data,
+			suppress_warnings => true );
+	};
 };
 
 subtest "Frame number sequence" => sub {

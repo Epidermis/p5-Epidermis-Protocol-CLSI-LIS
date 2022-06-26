@@ -73,14 +73,14 @@ sub _process_frame_data {
 		} or { is_good_frame => false, error => $@ })
 		->set_label('process frame data');
 	if( LIS_DEBUG && $self->_logger->is_trace) {
-		$f = $f->then(sub {
-			my ($result) = @_;
+		$f = $f->then_with_f(sub {
+			my ($f1, $result) = @_;
 			$self->_logger->trace( $self->_logger_name_prefix . "Processing frame data: "
 				.  ( $result->{is_good_frame}
 					? "Good frame"
 					: "Bad frame; Error: $result->{error}" )
 			);
-			Future->done( $result )
+			$f1;
 		});
 	}
 	$self->_process_frame_data_future( $f );

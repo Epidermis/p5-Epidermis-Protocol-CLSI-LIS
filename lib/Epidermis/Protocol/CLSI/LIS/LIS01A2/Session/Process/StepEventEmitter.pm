@@ -11,13 +11,13 @@ with qw(Beam::Emitter);
 around process_step => sub {
 	my ($orig, $self, @args) = @_;
 	$orig->($self, @args)
-		->followed_by(sub {
-			my ($f1) = @_;
+		->transform( done => sub {
+			my ($result) = @_;
 			$self->emit( 'step',
 				class => StepEvent,
-				state_transition => $f1->get,
+				state_transition => $result,
 			);
-			Future->done( $f1->get );
+			return $result;
 		});
 };
 

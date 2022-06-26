@@ -21,10 +21,8 @@ use Epidermis::Protocol::CLSI::LIS::Constants qw(
 	CR LF
 );
 
-use constant {
-	FRAME_TYPE_INTERMEDIATE => 'intermediate',
-	FRAME_TYPE_END => 'end',
-};
+use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame::Constants
+	qw(:frame_type);
 
 use Const::Fast;
 
@@ -69,8 +67,15 @@ has frame_number => (
 
 lazy next_frame_number => sub {
 	my ($self) = @_;
-	($self->frame_number + 1) % 8;
+	$self->_compute_next_frame_number(
+		$self->frame_number
+	);
 };
+
+sub _compute_next_frame_number {
+	my ($class, $frame_number) = @_;
+	($frame_number + 1) % 8;
+}
 
 =attr content
 

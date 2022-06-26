@@ -15,6 +15,9 @@ use Future::IO::Impl::IOAsync;
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Simulator';
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::TimerFactory';
+
+use aliased 'Test::TimerFactory::Factor';
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_system :enum_state :enum_event);
@@ -34,6 +37,15 @@ lazy connection => sub {
 	my $test_conn = Connection->build_test_connection;
 };
 
+lazy timer_factory => sub {
+	Moo::Role->create_class_with_roles(
+		TimerFactory,
+		Factor
+	)->new(
+		factor => 1/8,
+	);
+};
+
 lazy local => sub {
 	my ($self) = @_;
 	Simulator->new(
@@ -41,6 +53,7 @@ lazy local => sub {
 			connection => $self->connection->connection0,
 			session_system => SYSTEM_COMPUTER,
 			name => 'cli',
+			_timer_factory => $self->timer_factory,
 		),
 		commands => $self->local_steps,
 	);
@@ -53,6 +66,7 @@ lazy remote => sub {
 			connection => $self->connection->connection1,
 			session_system => SYSTEM_INSTRUMENT,
 			name => 'sim',
+			_timer_factory => $self->timer_factory,
 		),
 		commands => $self->remote_steps,
 	);

@@ -88,7 +88,7 @@ sub process_commands {
 		} else {
 			Future->die( "unexpected state" );
 		}
-	} foreach => $events;
+	} foreach => $events, while => sub { $_[0]->is_done };
 }
 
 1;

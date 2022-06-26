@@ -80,7 +80,7 @@ async sub step {
 			->set_label($action)
 	} @actions)->set_label( LIS_DEBUG ? "actions: @actions" : 'actions' );
 
-	await $actions_done->followed_by( sub { $self->_reset_after_step; Future->done->set_label('reset after step') } );
+	await $actions_done->then( sub { $self->_reset_after_step; Future->done->set_label('reset after step') } );
 
 	return StateTransition[
 		$transition_data->{id},
