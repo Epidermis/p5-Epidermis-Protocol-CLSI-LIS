@@ -1,10 +1,14 @@
 package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::Commands;
 # ABSTRACT: A library of commands
 
+use Devel::StrictMode;
+use Types::Standard qw(Enum);
+
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
-	qw(:enum_state);
+	qw(:enum_state :enum_event);
 
 use Module::Load;
+use Data::Dumper;
 
 use Log::Any qw($log);
 
@@ -17,6 +21,8 @@ our @EXPORT = qw(
 	SendMsgWithSingleFrame
 	SendMsgWithMultipleFrames
 	TestTransition
+	TestLastFrameGood
+	TestLastFrameBad
 );
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::TestMessages';
@@ -116,6 +122,40 @@ sub TestTransition {
 			);
 		},
 	);
+}
+
+sub _TestLastFrame {
+	my ($type, $data) = @_;
+	(Enum['good','bad'])->assert_valid($type) if STRICT;
+	Command->new(
+		description => "Test that last frame is $type and has data $data",
+		code => sub {
+			my ($self, $simulator, $session) = @_;
+			load Test2::V0, qw/is subtest/;
+			subtest("Test frame" => sub {
+				my $last_frame = $simulator->frame_data->[-1];
+				is( $last_frame->[0], ($type eq 'good' ? EV_GOOD_FRAME : EV_BAD_FRAME ) , "Frame is $type" );
+				my $data_dump = do {
+					local $Data::Dumper::Terse = 1;
+					local $Data::Dumper::Indent = 0;
+					local $Data::Dumper::Useqq = 1;
+					Dumper($data);
+				};
+				is( $last_frame->[1], $data, "Frame data is $data_dump" );
+			});
+			Future->done;
+		},
+	);
+}
+
+sub TestLastFrameGood {
+	my ($data) = @_;
+	return _TestLastFrame( 'good', $data );
+}
+
+sub TestLastFrameBad {
+	my ($data) = @_;
+	return _TestLastFrame( 'bad', $data );
 }
 
 1;
