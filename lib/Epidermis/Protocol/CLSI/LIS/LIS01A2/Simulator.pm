@@ -38,7 +38,9 @@ ro commands => (
 );
 
 ro transitions => (
+	init_arg => undef,
 	default => sub { [] },
+	should => ArrayRef,
 );
 
 sub _apply_logger {
