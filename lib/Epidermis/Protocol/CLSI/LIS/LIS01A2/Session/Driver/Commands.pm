@@ -21,13 +21,15 @@ our @EXPORT = qw(
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::TestMessages';
 
-use MooX::Struct Command => [
+use MooX::Struct -retain,
+Command => [
 	qw( description code ),
 	run => sub {
 		my ($self, $simulator, $session) = @_;
 		$_[0]->code->( @_ );
 	},
 ];
+our $Command = Command;
 
 sub StepUntilIdle {
 	Command->new(
