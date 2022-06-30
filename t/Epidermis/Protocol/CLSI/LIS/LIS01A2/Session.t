@@ -11,6 +11,7 @@ use IO::Async::Loop;
 use Future::IO::Impl::IOAsync;
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Client';
+use aliased 'Epidermis::Lab::Role::ConnectionHandles';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Process::StepEventEmitter' => 'Process::StepEventEmitter';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'LIS01A2::Message';
 
@@ -59,7 +60,7 @@ subtest "Test session" => sub {
 		$loop->await_all( $client->process_until_idle );
 	};
 
-	my $client_class = Moo::Role->create_class_with_roles(Client, Process::StepEventEmitter);
+	my $client_class = Moo::Role->create_class_with_roles(Client, Process::StepEventEmitter, ConnectionHandles);
 	my $setup_system = sub {
 		my ( $connection, $system, $message ) = @_;
 

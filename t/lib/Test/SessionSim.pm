@@ -14,6 +14,7 @@ use IO::Async::Loop;
 use Future::IO::Impl::IOAsync;
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session';
+use aliased 'Epidermis::Lab::Role::ConnectionHandles';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Simulator';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::TimerFactory';
 
@@ -46,10 +47,17 @@ lazy timer_factory => sub {
 	);
 };
 
+lazy session_class => sub {
+	Moo::Role->create_class_with_roles(
+		Session,
+		ConnectionHandles
+	);
+};
+
 lazy local => sub {
 	my ($self) = @_;
 	Simulator->new(
-		session => Session->new(
+		session => $self->session_class->new(
 			connection => $self->connection->connection0,
 			session_system => SYSTEM_COMPUTER,
 			name => 'cli',
@@ -62,7 +70,7 @@ lazy local => sub {
 lazy remote => sub {
 	my ($self) = @_;
 	Simulator->new(
-		session => Session->new(
+		session => $self->session_class->new(
 			connection => $self->connection->connection1,
 			session_system => SYSTEM_INSTRUMENT,
 			name => 'sim',

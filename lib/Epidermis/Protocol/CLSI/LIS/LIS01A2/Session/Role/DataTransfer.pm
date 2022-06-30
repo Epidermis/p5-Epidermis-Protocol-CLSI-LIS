@@ -18,6 +18,8 @@ use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS_DEBUG);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue;
 
+requires qw(read_handle write_handle);
+
 has _message_queue => (
 	is => 'ro',
 	default => sub { [] },
@@ -70,7 +72,7 @@ sub send_message {
 
 async sub _recv_data {
 	my ($self, $len) = @_;
-	my $data = await Future::IO->sysread( $self->connection->read_handle, $len );
+	my $data = await Future::IO->sysread( $self->read_handle, $len );
 	do {
 		$self->_logger->trace( $self->_logger_name_prefix . "Received data <@{[ $self->session_system ]}>:\n"
 			. Data::Hexdumper::hexdump( data => $data, suppress_warnings => true ) )
@@ -84,7 +86,7 @@ async sub _send_data {
 		$self->_logger->trace( $self->_logger_name_prefix . "Sending data <@{[ $self->session_system ]}>:\n"
 			. Data::Hexdumper::hexdump( data => $data, suppress_warnings => true ) )
 	} if LIS_DEBUG && $self->_logger->is_trace;
-	await Future::IO->syswrite_exactly( $self->connection->write_handle , $data );
+	await Future::IO->syswrite_exactly( $self->write_handle , $data );
 }
 
 1;
