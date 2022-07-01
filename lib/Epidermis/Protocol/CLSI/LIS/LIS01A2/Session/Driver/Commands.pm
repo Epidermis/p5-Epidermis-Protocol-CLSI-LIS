@@ -127,8 +127,9 @@ sub TestTransition {
 sub _TestLastFrame {
 	my ($type, $data) = @_;
 	(Enum['good','bad'])->assert_valid($type) if STRICT;
+	my $printable_data = $data =~ s/([^[:print:]])/sprintf("\\x%02x", ord($1))/ger;
 	Command->new(
-		description => "Test that last frame is $type and has data $data",
+		description => "Test that last frame is $type and has data $printable_data",
 		code => sub {
 			my ($self, $simulator, $session) = @_;
 			load Test2::V0, qw/is subtest/;
