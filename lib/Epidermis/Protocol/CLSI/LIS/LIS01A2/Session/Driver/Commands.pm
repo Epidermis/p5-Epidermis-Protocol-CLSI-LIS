@@ -142,7 +142,7 @@ sub TestTransition {
 			my ($self, $simulator, $session) = @_;
 			load Test2::V0, qw/is/;
 			Future->done(
-				is($simulator->transitions->[-1]->transition, $event, "@{[ $session->name ]}| Transition $event")
+				is($simulator->transitions->[-1]->transition, $event, "@{[ $session->name ]}| Transition $event into state @{[ $session->session_state ]}")
 			);
 		},
 	);
