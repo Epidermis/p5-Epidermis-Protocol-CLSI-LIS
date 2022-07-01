@@ -141,7 +141,7 @@ sub TestTransition {
 			my ($self, $simulator, $session) = @_;
 			load Test2::V0, qw/is/;
 			Future->done(
-				is($simulator->transitions->[-1]->transition, $event, "Transition $event")
+				is($simulator->transitions->[-1]->transition, $event, "@{[ $session->name ]}| Transition $event")
 			);
 		},
 	);
@@ -156,7 +156,7 @@ sub _TestLastFrame {
 		code => sub {
 			my ($self, $simulator, $session) = @_;
 			load Test2::V0, qw/is subtest/;
-			subtest("Test frame" => sub {
+			subtest("@{[ $session->name ]}| Test frame" => sub {
 				my $last_frame = $simulator->frame_data->[-1];
 				is( $last_frame->[0], ($type eq 'good' ? EV_GOOD_FRAME : EV_BAD_FRAME ) , "Frame is $type" );
 				my $data_dump = do {
