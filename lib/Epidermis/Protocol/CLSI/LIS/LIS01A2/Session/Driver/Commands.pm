@@ -26,7 +26,7 @@ our @EXPORT = qw(
 	TestTransition
 	TestLastFrameGood
 	TestLastFrameBad
-	PrintRetryCount
+	TestRetryCount
 );
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::TestMessages';
@@ -183,13 +183,15 @@ sub TestLastFrameBad {
 	return _TestLastFrame( 'bad', $data );
 }
 
-sub PrintRetryCount {
+sub TestRetryCount {
+	my ($current_try) = @_;
 	Command->new(
-		description => "Output retry count",
+		description => "Test retry count",
 		code => sub {
 			my ($self, $simulator, $session) = @_;
-			load Test2::V0, qw/note/;
-			note("@{[ $session->name ]}| Retry count @{[ $session->_retries ]}/@{[ $session->max_retries ]}");
+			load Test2::V0, qw/is/;
+			is($session->_retries, $current_try,
+				"@{[ $session->name ]}| Retry count @{[ $current_try ]}/@{[ $session->max_retries ]}");
 			Future->done;
 		},
 	);
