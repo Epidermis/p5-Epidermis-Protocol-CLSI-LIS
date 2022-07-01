@@ -3,6 +3,7 @@ package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::Commands;
 
 use Devel::StrictMode;
 use Types::Standard qw(Enum);
+use boolean;
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_state :enum_event);
@@ -20,6 +21,8 @@ our @EXPORT = qw(
 	SendMsg
 	SendMsgWithSingleFrame
 	SendMsgWithMultipleFrames
+	EnableCorruption
+	DisableCorruption
 	TestTransition
 	TestLastFrameGood
 	TestLastFrameBad
@@ -108,6 +111,26 @@ sub SendMsgWithMultipleFrames {
 		description => "Send message with $count frames",
 		code => SendMsg( $message )->code,
 	);
+}
+
+sub _SetCorruptFlag {
+	my ($flag) = @_;
+	Command->new(
+		description => "@{[ $flag ? 'Enable' : 'Disable' ]} corruption flag",
+		code => sub {
+			my ($self, $simulator, $session) = @_;
+			$session->should_corrupt_frame_data( $flag );
+			Future->done;
+		},
+	);
+}
+
+sub EnableCorruption {
+	return _SetCorruptFlag(true);
+}
+
+sub DisableCorruption {
+	return _SetCorruptFlag(false);
 }
 
 sub TestTransition {
