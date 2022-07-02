@@ -12,7 +12,7 @@ use Types::Standard qw(Enum);
 use Future::AsyncAwait;
 use Future::Utils qw(repeat);
 
-use Data::Dumper;
+use Data::Dumper::Concise;
 
 requires qw(session_state step);
 
@@ -30,8 +30,6 @@ async sub _process_until_state {
 		my $f = $self->process_step
 			->else_with_f( sub {
 				my ($f1, $exception) = @_;
-				local $Data::Dumper::Indent = 0;
-				local $Data::Dumper::Terse = 1;
 				$self->_logger->trace( $self->_logger_name_prefix . "Failed: " . Dumper($exception) );
 				return $f1;
 			})

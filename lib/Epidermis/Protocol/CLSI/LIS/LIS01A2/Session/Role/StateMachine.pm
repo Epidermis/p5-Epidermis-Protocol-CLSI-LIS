@@ -5,7 +5,7 @@ use Mu::Role;
 use namespace::autoclean;
 use MooX::Enumeration;
 
-use Data::Dumper;
+use Data::Dumper::Concise;
 
 use Types::Standard qw(Enum);
 
@@ -48,8 +48,6 @@ async sub step {
 	my ($self) = @_;
 	my $events = $self->state_machine->events_for_state( $self->session_state );
 	do {
-		local $Data::Dumper::Terse = 1;
-		local $Data::Dumper::Indent = 0;
 		$self->_logger->debug( $self->_logger_name_prefix . "State @{[ $self->session_state ]}: Events " . Dumper([ sort { $a cmp $b } @$events ]) )
 	} if LIS_DEBUG && $self->_logger->is_debug;
 	my @events_cb = @{ $self->_event_dispatch_table }{ @$events };

@@ -9,7 +9,7 @@ use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_state :enum_event);
 
 use Module::Load;
-use Data::Dumper;
+use Data::Dumper::Concise;
 
 use Log::Any qw($log);
 
@@ -164,13 +164,7 @@ sub _TestLastFrame {
 			subtest("@{[ $session->name ]}| Test frame" => sub {
 				my $last_frame = $simulator->frame_data->[-1];
 				is( $last_frame->[0], ($type eq 'good' ? EV_GOOD_FRAME : EV_BAD_FRAME ) , "Frame is $type" );
-				my $data_dump = do {
-					local $Data::Dumper::Terse = 1;
-					local $Data::Dumper::Indent = 0;
-					local $Data::Dumper::Useqq = 1;
-					Dumper($data);
-				};
-				is( $last_frame->[1], $data, "Frame data is $data_dump" );
+				is( $last_frame->[1], $data, "Frame data is @{[ Dumper($data) ]}" );
 			});
 			Future->done;
 		},
