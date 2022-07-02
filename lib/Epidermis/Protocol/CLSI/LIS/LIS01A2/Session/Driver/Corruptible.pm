@@ -12,8 +12,8 @@ has should_corrupt_frame_data => (
 );
 
 around _get_current_frame_data => sub {
-	my ($orig, $self) = @_;
-	my $frame_data = $self->$orig();
+	my ($orig, $self, @args) = @_;
+	my $frame_data = $self->$orig(@args);
 
 	if( $self->should_corrupt_frame_data ) {
 		my $C2 = substr($frame_data, -3, 1);
