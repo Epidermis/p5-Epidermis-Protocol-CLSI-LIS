@@ -6,6 +6,7 @@ use Mu::Role;
 with qw(
 	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Processable
 	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Process::StepEventEmitter
+	Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::Corruptible
 );
 
 1;

@@ -1,10 +1,15 @@
 package Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::Commands;
 # ABSTRACT: A library of commands
 
+use Devel::StrictMode;
+use Types::Standard qw(Enum);
+use boolean;
+
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
-	qw(:enum_state);
+	qw(:enum_state :enum_event);
 
 use Module::Load;
+use Data::Dumper;
 
 use Log::Any qw($log);
 
@@ -16,18 +21,26 @@ our @EXPORT = qw(
 	SendMsg
 	SendMsgWithSingleFrame
 	SendMsgWithMultipleFrames
+	EnableCorruption
+	DisableCorruption
 	TestTransition
+	TestLastFrameGood
+	TestLastFrameBad
+	TestRetryCount
 );
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::TestMessages';
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'Message';
 
-use MooX::Struct Command => [
+use MooX::Struct -retain,
+Command => [
 	qw( description code ),
 	run => sub {
 		my ($self, $simulator, $session) = @_;
 		$_[0]->code->( @_ );
 	},
 ];
+our $Command = Command;
 
 sub StepUntilIdle {
 	Command->new(
@@ -74,6 +87,9 @@ sub SleepPlus {
 
 sub SendMsg {
 	my ($message) = @_;
+	if( ! ref $message ) {
+		$message = Message->create_message( $message )
+	}
 	Command->new(
 		description => "Send message $message",
 		code => sub {
@@ -102,6 +118,26 @@ sub SendMsgWithMultipleFrames {
 	);
 }
 
+sub _SetCorruptFlag {
+	my ($flag) = @_;
+	Command->new(
+		description => "@{[ $flag ? 'Enable' : 'Disable' ]} corruption flag",
+		code => sub {
+			my ($self, $simulator, $session) = @_;
+			$session->should_corrupt_frame_data( $flag );
+			Future->done;
+		},
+	);
+}
+
+sub EnableCorruption {
+	return _SetCorruptFlag(true);
+}
+
+sub DisableCorruption {
+	return _SetCorruptFlag(false);
+}
+
 sub TestTransition {
 	my ($event) = @_;
 	Command->new(
@@ -110,8 +146,57 @@ sub TestTransition {
 			my ($self, $simulator, $session) = @_;
 			load Test2::V0, qw/is/;
 			Future->done(
-				is($simulator->transitions->[-1]->transition, $event, "Transition $event")
+				is($simulator->transitions->[-1]->transition, $event, "@{[ $session->name ]}| Transition $event into state @{[ $session->session_state ]}")
 			);
+		},
+	);
+}
+
+sub _TestLastFrame {
+	my ($type, $data) = @_;
+	(Enum['good','bad'])->assert_valid($type) if STRICT;
+	my $printable_data = $data =~ s/([^[:print:]])/sprintf("\\x%02x", ord($1))/ger;
+	Command->new(
+		description => "Test that last frame is $type and has data $printable_data",
+		code => sub {
+			my ($self, $simulator, $session) = @_;
+			load Test2::V0, qw/is subtest/;
+			subtest("@{[ $session->name ]}| Test frame" => sub {
+				my $last_frame = $simulator->frame_data->[-1];
+				is( $last_frame->[0], ($type eq 'good' ? EV_GOOD_FRAME : EV_BAD_FRAME ) , "Frame is $type" );
+				my $data_dump = do {
+					local $Data::Dumper::Terse = 1;
+					local $Data::Dumper::Indent = 0;
+					local $Data::Dumper::Useqq = 1;
+					Dumper($data);
+				};
+				is( $last_frame->[1], $data, "Frame data is $data_dump" );
+			});
+			Future->done;
+		},
+	);
+}
+
+sub TestLastFrameGood {
+	my ($data) = @_;
+	return _TestLastFrame( 'good', $data );
+}
+
+sub TestLastFrameBad {
+	my ($data) = @_;
+	return _TestLastFrame( 'bad', $data );
+}
+
+sub TestRetryCount {
+	my ($current_try) = @_;
+	Command->new(
+		description => "Test retry count",
+		code => sub {
+			my ($self, $simulator, $session) = @_;
+			load Test2::V0, qw/is/;
+			is($session->_retries, $current_try,
+				"@{[ $session->name ]}| Retry count @{[ $current_try ]}/@{[ $session->max_retries ]}");
+			Future->done;
 		},
 	);
 }

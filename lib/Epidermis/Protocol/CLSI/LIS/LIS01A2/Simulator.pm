@@ -8,18 +8,19 @@ use MooX::Should;
 use Future::AsyncAwait;
 use Future::Utils qw(repeat try_repeat);
 
-use Types::Standard  qw(ConsumerOf ArrayRef);
+use Types::Standard  qw(ConsumerOf ArrayRef Tuple Enum Str);
 use Types::Common::Numeric qw(PositiveInt);
 
 use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS_DEBUG);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
-	qw(:enum_state);
+	qw(:enum_state :enum_event);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::Commands;
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session';
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Drivable';
+use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::StateMachine ();
 
 with qw( MooX::Role::Logger );
 
@@ -34,11 +35,25 @@ ro session =>  (
 );
 
 ro commands => (
-	should => ArrayRef,
+	should => ArrayRef[ Tuple[
+		Enum[@ENUM_STATE],
+		$Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::Commands::Command->TYPE_TINY
+	]],
 );
 
 ro transitions => (
+	init_arg => undef,
 	default => sub { [] },
+	should => ArrayRef[$Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Role::StateMachine::StateTransition->TYPE_TINY],
+);
+
+ro frame_data => (
+	init_arg => undef,
+	default => sub { [] },
+	should => ArrayRef[ Tuple[
+			Enum[EV_GOOD_FRAME,EV_BAD_FRAME],
+			Str
+		]],
 );
 
 sub _apply_logger {
@@ -66,10 +81,26 @@ sub _apply_transition_tracking {
 	});
 }
 
+sub _apply_frame_data_tracking {
+	my ($self) = @_;
+	$self->session->on( step => sub {
+		my ($event) = @_;
+		if( $event->transition eq EV_GOOD_FRAME || $event->transition eq EV_BAD_FRAME ) {
+			push @{ $self->frame_data },
+				[
+					$event->transition,
+					$self->session->_current_receivable_message->_current_frame_data
+				];
+		}
+	});
+
+}
+
 sub BUILD {
 	my ($self) = @_;
 	$self->_apply_logger;
 	$self->_apply_transition_tracking;
+	$self->_apply_frame_data_tracking;
 }
 
 sub process_commands {

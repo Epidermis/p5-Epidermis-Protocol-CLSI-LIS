@@ -63,7 +63,7 @@ async sub step {
 
 	my $from = $self->session_state;
 	my $transition_data = $self->state_machine->process_event(
-		$self,
+		$from,
 		$transition_event
 	);
 

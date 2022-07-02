@@ -6,14 +6,14 @@ use namespace::autoclean;
 use MooX::Enumeration;
 use MooX::Should;
 
-use Types::Standard qw(Enum ConsumerOf);
+use Types::Standard qw(Enum FileHandle);
 
 use Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Constants
 	qw(:enum_system :enum_device);
 
-has connection => (
+has [qw(read_handle write_handle)] => (
 	is => 'ro',
-	should => ConsumerOf['Epidermis::Lab::Connection::Role::Handles'],
+	should => FileHandle,
 	required => 1,
 );
 

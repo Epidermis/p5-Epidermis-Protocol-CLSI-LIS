@@ -99,10 +99,15 @@ after _reset_after_step => sub {
 
 ### ACTIONS
 
+sub _get_current_frame_data {
+	my ($self) = @_;
+	$self->_current_sendable_message->get_current_frame->frame_data;
+}
+
 async sub do_send_frame {
 	my ($self) = @_;
 	await $self->_send_data(
-		$self->_current_sendable_message->get_current_frame->frame_data
+		$self->_get_current_frame_data
 	);
 }
 

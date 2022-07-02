@@ -10,7 +10,7 @@ with qw(Beam::Emitter);
 
 around process_step => sub {
 	my ($orig, $self, @args) = @_;
-	$orig->($self, @args)
+	$self->$orig(@args)
 		->transform( done => sub {
 			my ($result) = @_;
 			$self->emit( 'step',

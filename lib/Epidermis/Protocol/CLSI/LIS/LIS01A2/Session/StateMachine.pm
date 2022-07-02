@@ -165,8 +165,7 @@ sub to_plantuml {
 }
 
 sub process_event {
-	my ($self, $session, $event) = @_;
-	my $current_state = $session->session_state;
+	my ($self, $current_state, $event) = @_;
 
 	my $to = $self->_get_transition_from_state_for_event( $current_state, $event );
 
