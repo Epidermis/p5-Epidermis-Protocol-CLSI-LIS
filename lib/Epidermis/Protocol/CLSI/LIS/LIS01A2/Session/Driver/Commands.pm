@@ -30,6 +30,7 @@ our @EXPORT = qw(
 );
 
 use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::Driver::TestMessages';
+use aliased 'Epidermis::Protocol::CLSI::LIS::LIS01A2::Message' => 'Message';
 
 use MooX::Struct -retain,
 Command => [
@@ -86,6 +87,9 @@ sub SleepPlus {
 
 sub SendMsg {
 	my ($message) = @_;
+	if( ! ref $message ) {
+		$message = Message->create_message( $message )
+	}
 	Command->new(
 		description => "Send message $message",
 		code => sub {
