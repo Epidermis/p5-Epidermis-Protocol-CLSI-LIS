@@ -173,7 +173,15 @@ async sub event_on_get_frame {
 	# Check this early to return from event early.
 	die 'Invalid frame data: no STX' unless $frame_data =~ /\Q@{[ STX ]}\E/;
 
-	if( ! $self->_has_current_receivable_message ) {
+	my $create_new_receivable_message = 0;
+	if( $self->_has_current_receivable_message && $self->_current_receivable_message->message->is_complete ) {
+		$self->_clear_current_receivable_message;
+		$create_new_receivable_message = 1;
+	} else {
+		$create_new_receivable_message = 1;
+	}
+
+	if( $create_new_receivable_message ) {
 		$self->_current_receivable_message(
 			$Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue::ReceivableMessage->new(
 					initial_fn => $self->_frame_number,
