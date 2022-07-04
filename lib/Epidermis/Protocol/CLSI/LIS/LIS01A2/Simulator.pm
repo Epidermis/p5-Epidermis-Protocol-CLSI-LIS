@@ -111,8 +111,8 @@ sub process_commands {
 		my $event = shift;
 		my ($state, $event_command) = @$event;
 		if( $session->session_state eq $state ) {
-			$self->_logger->tracef( "[ %s | %s ]",
-				$self->session->name,
+			$self->_logger->infof( "[%s%s]",
+				$self->session->_logger_name_prefix,
 				$event_command->description
 			);
 			$event_command->run($self, $session);
