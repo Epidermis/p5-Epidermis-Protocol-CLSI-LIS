@@ -51,7 +51,13 @@ sub _update_data_to_send_future {
 	my ($self) = @_;
 	# Treat these two futures as producer-consumer semaphores.
 	my $is_empty = $self->_message_queue_is_empty;
-	$self->_data_to_send_future( Future->new->set_label('_data_to_send') ) if $self->_data_to_send_future->is_ready;
+	if($self->_data_to_send_future->is_ready) {
+		if( ! $is_empty ) {
+			$self->_data_to_send_future( Future->done( ! $is_empty )->set_label('_data_to_send') )
+		} else {
+			$self->_data_to_send_future( Future->new->set_label('_data_to_send') )
+		}
+	}
 	$self->_message_queue_empty_future( Future->done( $is_empty ) );
 }
 
