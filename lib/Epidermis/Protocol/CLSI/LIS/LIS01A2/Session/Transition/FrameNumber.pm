@@ -8,6 +8,7 @@ use MooX::Should;
 
 use Epidermis::Protocol::CLSI::LIS::Types qw(FrameNumber);
 use Epidermis::Protocol::CLSI::LIS::Constants qw(LIS01A2_FIRST_FRAME_NUMBER);
+use Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame;
 
 has _frame_number => (
 	is => 'rw',
@@ -16,8 +17,10 @@ has _frame_number => (
 
 sub _increment_frame_number {
 	my ($self) = @_;
-	my $fn = $self->_frame_number;
-	$self->_frame_number( ( $fn + 1 ) % 8 );
+	$self->_frame_number( Epidermis::Protocol::CLSI::LIS::LIS01A2::Frame
+		->_compute_next_frame_number(
+			$self->_frame_number
+	));
 }
 
 ### ACTIONS
