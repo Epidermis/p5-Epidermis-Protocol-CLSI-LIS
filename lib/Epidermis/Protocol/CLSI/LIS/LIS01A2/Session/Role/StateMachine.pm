@@ -72,6 +72,13 @@ async sub step {
 	$self->session_state( $transition_data->{to} );
 
 	my @actions = @{ $transition_data->{action} };
+
+	do {
+		$self->_logger->debug( $self->_logger_name_prefix .
+			"State @{[ $self->session_state ]}: Actions " . Dumper([ sort { $a cmp $b } @actions ])
+		)
+	} if LIS_DEBUG && $self->_logger->is_debug;
+
 	my $actions_done = Future->needs_all( map {
 		my $action = $_;
 		my $f = $self->_action_dispatch_table->{$action}->($self)

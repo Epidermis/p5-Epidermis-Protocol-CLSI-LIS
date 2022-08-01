@@ -100,9 +100,16 @@ test "Simulate" => sub {
 	my $self = shift;
 	Log::Any::Adapter->set( {
 		lexically => \my $lex,
-		#category => qr/^main$|^Epidermis::Protocol::CLSI::LIS::LIS01A2::Session/
-		},
-		'Screen', min_level => 'trace', formatter => sub { $_[1] =~ s/^/  # LOG: /mgr } ) if $ENV{TEST_VERBOSE};
+		category => qr/
+			^main$
+			| ^Test::SessionSim$
+			| ^Epidermis::Protocol::CLSI::LIS::LIS01A2::Simulator
+			| ^Epidermis::Protocol::CLSI::LIS::LIS01A2::Session
+		/x
+	}, 'Screen', min_level => 'trace',
+		formatter => sub {
+		$_[1] =~ s/^/  # LOG: /mgr
+	} ) if $ENV{TEST_VERBOSE};
 
 	my $loop = $self->loop;
 

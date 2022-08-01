@@ -51,7 +51,13 @@ sub _update_data_to_send_future {
 	my ($self) = @_;
 	# Treat these two futures as producer-consumer semaphores.
 	my $is_empty = $self->_message_queue_is_empty;
-	$self->_data_to_send_future( Future->new->set_label('_data_to_send') ) if $self->_data_to_send_future->is_ready;
+	if($self->_data_to_send_future->is_ready) {
+		if( ! $is_empty ) {
+			$self->_data_to_send_future( Future->done( ! $is_empty )->set_label('_data_to_send') )
+		} else {
+			$self->_data_to_send_future( Future->new->set_label('_data_to_send') )
+		}
+	}
 	$self->_message_queue_empty_future( Future->done( $is_empty ) );
 }
 
@@ -167,7 +173,15 @@ async sub event_on_get_frame {
 	# Check this early to return from event early.
 	die 'Invalid frame data: no STX' unless $frame_data =~ /\Q@{[ STX ]}\E/;
 
-	if( ! $self->_has_current_receivable_message ) {
+	my $create_new_receivable_message = 0;
+	if( $self->_has_current_receivable_message && $self->_current_receivable_message->message->is_complete ) {
+		$self->_clear_current_receivable_message;
+		$create_new_receivable_message = 1;
+	} else {
+		$create_new_receivable_message = 1;
+	}
+
+	if( $create_new_receivable_message ) {
 		$self->_current_receivable_message(
 			$Epidermis::Protocol::CLSI::LIS::LIS01A2::Session::MessageQueue::ReceivableMessage->new(
 					initial_fn => $self->_frame_number,
