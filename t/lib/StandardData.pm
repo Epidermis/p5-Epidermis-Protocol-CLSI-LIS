@@ -12,29 +12,29 @@ sub lis02a2_standard_data {
 			## Note 1 This sample is not recommended for implementation.
 			#id => 'fig3',
 			#desc => 'Figure 3. Minimal Implementation (No Patient ID or Specimen ID)',
-			#text => <<~'EOF',
+			#text => <<'EOF',
 				#EOF
 		#},
 		{
 			id => 'fig4',
 			desc => 'Figure 4. No Patient ID; Specimen ID and Multiple Results Shown',
-			text => <<~'EOF',
-	H|\^&
-	  P|1
-	    O|1|927529||^^^A1\^^^A2
-	      R|1|^^^A1|0.295||||||||19890327132247
-	      R|2|^^^A2|0.312||||||||19890327132248
-	  P|2|
-	    O|1|927533||^^^A3\^^^A4
-	      R|1|^^^A3|1.121||||||||19890327132422
-	      R|2|^^^A4|1.097||||||||19890317132422
-	L|1
-	EOF
+			text => <<'EOF',
+H|\^&
+  P|1
+    O|1|927529||^^^A1\^^^A2
+      R|1|^^^A1|0.295||||||||19890327132247
+      R|2|^^^A2|0.312||||||||19890327132248
+  P|2|
+    O|1|927533||^^^A3\^^^A4
+      R|1|^^^A3|1.121||||||||19890327132422
+      R|2|^^^A4|1.097||||||||19890317132422
+L|1
+EOF
 		},
 		{
 			id => 'fig5',
 			desc => 'Figure 5. Request from Analyzer for Test Selections on Specimens 032989325-032989327',
-			text => <<~'EOF',
+			text => <<'EOF',
 H|\^&||PSWD|Harper Labs|2937 Southwestern Avenue^Buffalo^NY^73205||319 412-9722||||P|1394-97|19890314
   Q|1|^032989325|^032989327|ALL||||||||O
 L|1|N
@@ -43,7 +43,7 @@ EOF
 		{
 			id => 'fig6',
 			desc => 'Figure 6. Response from Information System for Previous Request',
-			text => <<~'EOF',
+			text => <<'EOF',
 H|\^&||PSWD|Harper Labs|2937 Southwestern Avenue^Buffalo^NY^73205||319 412-9722||||P|1394-97|19890314
   P|1|2734|123|306-87-4587|BLAKE^LINDSEY^ANN^MISS
     O|1|032989325||^^^BUN|R
@@ -59,7 +59,7 @@ EOF
 		{
 			id => 'fig7',
 			desc => 'Figure 7. Results from Given Ordered Test Selections Shown in Various Formats',
-			text => <<~'EOF'=~ s/\Q<CR> ###\E.*$//gmr,
+			text => <<'EOF'=~ s/\Q<CR> ###\E.*$//gmr,
 H|\^&||PSWD|Harper Labs|2937 Southwestern Avenue^Buffalo^NY^73205||319 412-9722||||P|1394-97|19890314
   P|1|2734|123|306-87-4587|BLAKE^LINDSEY^ANN^MISS
   C|1|L|Notify IDC if tests positive|G
@@ -109,7 +109,7 @@ EOF
 		{
 			id => 'fig8',
 			desc => 'Figure 8. Request from Information System to Instrument for Previously Run Results',
-			text => <<~'EOF',
+			text => <<'EOF',
 H|\^&||PSWD|Harper Labs|2937 Southwestern Avenue^Buffalo^NY^73205||319 412-9722||||P|1394-97|19890314
   Q|1|032989326||ALL
 L|1
@@ -118,7 +118,7 @@ EOF
 		{
 			id => 'fig9',
 			desc => 'Figure 9. Reply to Result Request',
-			text => <<~'EOF',
+			text => <<'EOF',
 H|\^&||PSWD|Harper Labs|2937 Southwestern Avenue^Buffalo^NY^73205||319 412-9722||||P|1394-97|19890314
   P|1|2462|158|287-17-2791|POHL^ALLEN^M.
     O|1|032989326||^^^LIVER|S
@@ -134,7 +134,7 @@ EOF
 		{
 			id => 'fig10',
 			desc => 'Figure 10. Microbiology Order and Result-Download of Demographics and Order',
-			text => <<~'EOF',
+			text => <<'EOF',
 H|\^&||Password1|Micro1|||||LSI1||P|1394-94|19890501074500
   P|1||52483291||Smith^John|Samuels|19600401|M|W|4526 C Street^Fresno^CA^92304||(402)782-3424x242|542^Dr.Brown|||72^in.|175^lb.||Penicillin||||19890428|IP|Ward1|||C|M|WSP||ER|PC^Prompt Care
     O|1|5762^01||^^^BC^BloodCulture^POSCOMBO|R|198905011530|198905020700|||456^Farnsworth|N|||198905021130|BL^Blood|123^Dr.Wirth||||||||Instrument#1|||ER|N
@@ -146,7 +146,7 @@ EOF
 		{
 			id => 'fig11',
 			desc => 'Figure 11. Microbiology Order and Result-Upload of Finalized Results',
-			text => <<~'EOF' =~ s/ (?<indent>\s*) \Q...\E \n \k<indent> \QR|90|\E /$+{indent}R|14|/mxr,
+			text => <<'EOF' =~ s/ (?<indent>\s*) \Q...\E \n \k<indent> \QR|90|\E /$+{indent}R|14|/mxr,
 H|\^&||Password1|Micro1|||||LSI1||P|1394-94|19890501074500
   P|1||52483291
     O|1|5762^01||^^^BC^^POSCOMBO|||||||||||BL||||||||||F

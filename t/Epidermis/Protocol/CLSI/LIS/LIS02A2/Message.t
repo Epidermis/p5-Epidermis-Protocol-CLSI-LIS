@@ -43,7 +43,7 @@ subtest "Test message creation from text" => sub {
 		};
 		my $node_tree_names = join "", $lis_msg->tree_dag_node->dump_names;
 		note $node_tree_names;
-		is $node_tree_names, <<~EOF, 'Dump of nodes matches expected tree';
+		is $node_tree_names, <<EOF =~ s/^\t*//mgr, 'Dump of nodes matches expected tree';
 		root
 		  0|H
 		    1|P|1
@@ -89,7 +89,7 @@ subtest "Test message creation from text" => sub {
 		        41|R|11
 		        42|R|12
 		  43|L|1
-		EOF
+EOF
 	};
 
 	subtest "Does not start with message header" => sub {
