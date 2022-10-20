@@ -17,6 +17,7 @@ use failures qw(
 	LIS02A2::Message::InvalidRecordNumberSequence::First
 	LIS02A2::Message::InvalidRecordLevel
 	LIS02A2::Message::RecordAfterEndRecord
+	LIS02A2::Message::CodecMessageHeaderMismatch
 );
 
 has codec => (
@@ -122,9 +123,25 @@ sub add_record {
 	failure::LIS02A2::Message::RecordAfterEndRecord->throw
 		if( $self->is_complete );
 
-	if( $self->is_empty
-		&& $record->type_id ne MessageHeader->type_id ) {
-		failure::LIS02A2::Message::InvalidRecordLevel->throw;
+	if( $self->is_empty ) {
+		if( $record->type_id eq MessageHeader->type_id ) {
+			if( ! $self->has_codec ) {
+				my $codec = Epidermis::Protocol::CLSI::LIS::LIS02A2::Codec->new(
+					delimiter_spec => $record->delimiter_definition,
+				);
+				$self->codec( $codec );
+			} elsif( $self->codec->delimiter_spec ne $record->delimiter_definition ) {
+				failure::LIS02A2::Message::CodecMessageHeaderMismatch->throw({
+					msg => "Codec already set and has different delimiters from MessageHeader record",
+					payload => {
+						codec  => $self->codec,
+						record => $record,
+					},
+				});
+			}
+		} else {
+			failure::LIS02A2::Message::InvalidRecordLevel->throw;
+		}
 	}
 
 	# Check sequence and level
