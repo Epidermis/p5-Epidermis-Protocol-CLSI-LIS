@@ -72,10 +72,17 @@ sub import {
 }
 
 use Moo::Role;
+use Package::Stash;
+use List::Util qw(first);
 
 sub _fields {
 	my $package = blessed $_[0] ? ref $_[0] : $_[0];
-	return @{ $RECORD_FIELD_STORE{$package} };
+	# quick-and-dirty inheritance
+	my $up_package = exists $RECORD_FIELD_STORE{$package}
+		? $package
+		: first { /\A \QEpidermis::Protocol::CLSI::LIS::LIS02A2::Record::\E/x }
+			@{ Package::Stash->new( $package )->get_symbol('@ISA') };
+	return @{ $RECORD_FIELD_STORE{$up_package} };
 }
 
 has _number_of_decoded_fields => (
